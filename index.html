@@ -2,17 +2,18 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0f14">
 <title>🐺 Monopoly des Loups — Multijoueur En Ligne</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<!-- Firebase SDK chargé en avance pour éviter l'erreur "Failed to fetch dynamically imported module" -->
-<script type="module">
-  import { initializeApp, getApps, deleteApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { getDatabase, ref, set, get, update, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-  window.__firebase = { initializeApp, getApps, deleteApp, getDatabase, ref, set, get, update, onValue, remove };
-  window.dispatchEvent(new Event('firebase-ready'));
-</script>
 <style>
+/* ══════════════════════════════════════
+   MONOPOLY DES LOUPS — MOBILE v3
+   Layout inspiré Monopoly Go / mobile
+══════════════════════════════════════ */
 :root{
   --bg:#0d0f14;--bg2:#141720;--bg3:#1a1e2a;--bg4:#21263a;
   --border:#2a3050;--border2:#363d5a;
@@ -21,69 +22,200 @@
   --purple:#a29bfe;--orange:#ff7f50;--blue:#74b9ff;--pink:#fd79a8;
   --radius:14px;--shadow:0 8px 32px rgba(0,0,0,.45);
   --font:'Nunito',sans-serif;--font2:'Cinzel Decorative',cursive;
+  --nav-h:64px;--topbar-h:52px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(162,155,254,.06),transparent),radial-gradient(ellipse 60% 50% at 80% 90%,rgba(0,210,211,.05),transparent);pointer-events:none;z-index:0;}
-.screen{display:none;position:relative;z-index:1;}
-#menu-screen{align-items:center;padding:40px 16px;flex-direction:column;min-height:100vh;}
-.hero-title{font-family:var(--font2);font-size:clamp(1.6rem,5vw,2.8rem);background:linear-gradient(135deg,var(--gold),#ff9f43,var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;margin-bottom:8px;text-align:center;}
-.hero-sub{color:var(--text2);font-size:.9rem;text-align:center;margin-bottom:6px;}
-.hero-badge{display:inline-block;background:linear-gradient(135deg,#00d2d3,#0984e3);color:#fff;font-size:.72rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:20px;}
-.menu-card{width:100%;max-width:560px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:16px;}
-.mc-title{font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:14px;}
-.inp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:.9rem;font-family:var(--font);font-weight:600;margin-bottom:10px;}
+
+/* ── SCREENS ── */
+.screen{display:none;position:fixed;inset:0;z-index:1;overflow-y:auto;overflow-x:hidden;}
+#menu-screen{align-items:center;padding:env(safe-area-inset-top,20px) 16px 24px;flex-direction:column;}
+#lobby-screen{flex-direction:column;align-items:center;padding:env(safe-area-inset-top,16px) 16px 24px;}
+#winner-screen{flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 24px;text-align:center;}
+
+/* ── MENU / LOBBY shared components ── */
+.hero-title{font-family:var(--font2);font-size:clamp(1.4rem,6vw,2.4rem);background:linear-gradient(135deg,var(--gold),#ff9f43,var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;margin-bottom:8px;text-align:center;}
+.hero-sub{color:var(--text2);font-size:.85rem;text-align:center;margin-bottom:6px;}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,#00d2d3,#0984e3);color:#fff;font-size:.7rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:18px;}
+.menu-card{width:100%;max-width:520px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+.mc-title{font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:12px;}
+.inp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:1rem;font-family:var(--font);font-weight:600;margin-bottom:10px;-webkit-appearance:none;}
 .inp:focus{outline:none;border-color:var(--purple);}
 select.inp{cursor:pointer;}
-.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--purple),#6d28d9);border:none;border-radius:var(--radius);color:#fff;font-size:.95rem;font-weight:900;font-family:var(--font);cursor:pointer;transition:.2s;margin-bottom:10px;}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(162,155,254,.4);}
-.btn-secondary{width:100%;padding:14px;background:linear-gradient(135deg,#ff4757,#ff6b35);border:none;border-radius:var(--radius);color:#fff;font-size:.95rem;font-weight:900;font-family:var(--font);cursor:pointer;transition:.2s;margin-bottom:10px;}
-.btn-secondary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(255,71,87,.4);}
-.cfg-modal{width:100%;max-width:560px;background:var(--bg2);border:2px solid var(--gold);border-radius:var(--radius);padding:24px;margin-bottom:16px;}
-.cfg-title{font-family:var(--font2);font-size:1rem;color:var(--gold);margin-bottom:16px;text-align:center;}
-.cfg-field{margin-bottom:12px;}
-.cfg-label{font-size:.72rem;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;display:block;}
-#lobby-screen{flex-direction:column;align-items:center;padding:24px 16px;min-height:100vh;}
-.lobby-card{width:100%;max-width:560px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
-.lobby-code-box{background:linear-gradient(135deg,rgba(162,155,254,.12),rgba(0,210,211,.06));border:2px solid var(--purple);border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;}
-.lobby-code-label{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:8px;}
-.lobby-code-value{font-family:var(--font2);font-size:2.2rem;color:var(--gold);letter-spacing:.3em;}
-.lobby-player{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;}
+.btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,var(--purple),#6d28d9);border:none;border-radius:var(--radius);color:#fff;font-size:1rem;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s;margin-bottom:10px;-webkit-appearance:none;}
+.btn-primary:active{transform:scale(.97);}
+.btn-secondary{width:100%;padding:15px;background:linear-gradient(135deg,#ff4757,#ff6b35);border:none;border-radius:var(--radius);color:#fff;font-size:1rem;font-weight:900;font-family:var(--font);cursor:pointer;transition:.15s;margin-bottom:10px;-webkit-appearance:none;}
+.btn-secondary:active{transform:scale(.97);}
+.cfg-modal{width:100%;max-width:520px;background:var(--bg2);border:2px solid var(--gold);border-radius:var(--radius);padding:20px;margin-bottom:14px;}
+.cfg-title{font-family:var(--font2);font-size:.95rem;color:var(--gold);margin-bottom:14px;text-align:center;}
+.cfg-field{margin-bottom:10px;}
+.cfg-label{font-size:.68rem;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;display:block;}
+.lobby-card{width:100%;max-width:520px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.lobby-code-box{background:linear-gradient(135deg,rgba(162,155,254,.12),rgba(0,210,211,.06));border:2px solid var(--purple);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;}
+.lobby-code-label{font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:6px;}
+.lobby-code-value{font-family:var(--font2);font-size:2rem;color:var(--gold);letter-spacing:.3em;}
+.lobby-player{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px;margin-bottom:8px;}
 .lobby-player.me{border-color:var(--purple);}
-.lp-animal{font-size:1.6rem;}
-.lp-name{font-size:.85rem;font-weight:700;flex:1;}
-.lp-badge{font-size:.68rem;font-weight:900;padding:3px 10px;border-radius:20px;}
+.lp-animal{font-size:1.5rem;}
+.lp-name{font-size:.82rem;font-weight:700;flex:1;}
+.lp-badge{font-size:.65rem;font-weight:900;padding:3px 10px;border-radius:20px;}
 .lp-badge.host{background:rgba(255,215,0,.15);color:var(--gold);}
 .lp-badge.ready{background:rgba(46,213,115,.15);color:var(--green);}
 .lp-badge.waiting{background:rgba(139,145,181,.1);color:var(--text3);}
-#game-screen{flex-direction:row;height:100vh;overflow:hidden;}
-.game-left{display:flex;flex-direction:column;width:200px;min-width:180px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
-.game-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-.game-right{width:260px;min-width:220px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
-.g-topbar{background:var(--bg3);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
-#g-hturn{font-size:.78rem;font-weight:700;color:var(--text2);flex:1;}
-.tb-btn{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:5px 9px;color:var(--text2);font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap;}
-.tb-btn:hover{border-color:var(--border2);color:var(--text);}
-#board-wrap{flex:1;overflow:auto;padding:16px;display:flex;align-items:flex-start;justify-content:flex-start;background:#080a10;}
-.pane-title{font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);padding:10px 12px 6px;border-bottom:1px solid var(--border);}
-.players-panel{padding:8px;}
-.pc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:6px;transition:.2s;}
-.pc.on{border-color:var(--purple);box-shadow:0 0 12px rgba(162,155,254,.15);}
-.pc.out{opacity:.35;}
-.pc-top{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
-.pc-emo{font-size:1.4rem;flex-shrink:0;}
-.pc-name{font-weight:800;font-size:.78rem;}
-.pc-role{font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:20px;display:inline-block;margin-top:2px;}
-.pc-money{font-size:.95rem;font-weight:900;color:var(--green);margin-bottom:3px;}
-.pc-info{font-size:.62rem;color:var(--text3);}
-.action-bar{padding:12px;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;max-height:40vh;overflow-y:auto;}
+.online-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(46,213,115,.1);border:1px solid rgba(46,213,115,.3);border-radius:20px;padding:4px 12px;font-size:.7rem;font-weight:800;color:var(--green);}
+.online-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+.menu-nav-tab{padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s;font-family:var(--font);}
+.menu-nav-tab.on,.menu-nav-tab:active{background:var(--purple);border-color:var(--purple);color:#fff;}
+.menu-tab-pane{display:none;width:100%;}
+.menu-tab-pane.on{display:block;}
+
+/* ══════════════════════════════════════
+   GAME SCREEN — MOBILE LAYOUT
+══════════════════════════════════════ */
+#game-screen{
+  display:none;
+  position:fixed;inset:0;z-index:1;
+  flex-direction:column;
+  overflow:hidden;
+  background:#080a10;
+}
+
+/* Top bar */
+.g-topbar{
+  height:var(--topbar-h);
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:0 12px;
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;
+  padding-top:env(safe-area-inset-top,0px);
+}
+#g-hturn{font-size:.78rem;font-weight:700;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tb-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text2);font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.tb-btn:active{background:var(--bg4);}
+
+/* Board area — flex:1, zoomable */
+#board-area{
+  flex:1;
+  position:relative;
+  overflow:hidden;
+  background:#080a10;
+}
+#board-wrap{
+  position:absolute;inset:0;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  transition:none;
+}
+#board-scaler{
+  /* sized by applyZoom to actual rendered pixel size */
+  display:inline-block;
+  position:relative;
+}
+#board-container{
+  flex-shrink:0;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  transform-origin:center center;
+}
+
+/* Zoom controls bar */
+#zoom-bar{
+  position:absolute;top:8px;right:8px;
+  display:flex;flex-direction:column;gap:6px;
+  z-index:20;
+}
+.zoom-btn{
+  width:38px;height:38px;
+  border-radius:12px;
+  background:rgba(20,23,32,.9);
+  border:1px solid var(--border2);
+  color:var(--text);
+  font-size:1rem;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;
+  backdrop-filter:blur(8px);
+  transition:.15s;
+  box-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+.zoom-btn:active{background:rgba(162,155,254,.2);}
+.zoom-btn.active{background:rgba(162,155,254,.25);border-color:var(--purple);color:var(--purple);}
+
+/* Player position indicator on board (minimap dot) */
+#my-pos-hint{
+  position:absolute;bottom:8px;left:8px;
+  background:rgba(20,23,32,.9);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:4px 10px;
+  font-size:.68rem;font-weight:800;color:var(--text2);
+  backdrop-filter:blur(8px);
+  pointer-events:none;z-index:20;
+}
+
+/* Bottom panel — slides up */
+#bottom-panel{
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+  min-height:180px;
+  max-height:45vh;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* Pull handle */
+#panel-handle{
+  height:28px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  background:var(--bg2);
+}
+#panel-handle::after{content:'';width:36px;height:4px;border-radius:2px;background:var(--border2);}
+
+/* Bottom nav tabs */
+#bottom-nav{
+  display:flex;
+  border-top:1px solid var(--border);
+  background:var(--bg);
+  flex-shrink:0;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.bnav-btn{
+  flex:1;
+  padding:10px 4px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:none;cursor:pointer;
+  color:var(--text3);font-family:var(--font);
+  transition:.15s;
+}
+.bnav-btn.active{color:var(--purple);}
+.bnav-btn .bnav-icon{font-size:1.3rem;}
+.bnav-btn .bnav-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;}
+.bnav-indicator{width:4px;height:4px;border-radius:50%;background:var(--purple);margin:0 auto;opacity:0;transition:.15s;}
+.bnav-btn.active .bnav-indicator{opacity:1;}
+
+/* Tab panes in bottom panel */
+.gpane{display:none;flex:1;overflow-y:auto;overscroll-behavior:contain;}
+.gpane.active{display:flex;flex-direction:column;}
+
+/* Action pane */
+#pane-action{padding:12px 14px 4px;}
 .ab-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .ab-emo{font-size:1.8rem;}
-.ab-info h3{font-size:.85rem;font-weight:800;}
+.ab-info h3{font-size:.88rem;font-weight:800;}
 .ab-info p{font-size:.72rem;color:var(--text2);}
-.ab-btns{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px;}
-.gbtn{padding:9px 14px;border:none;border-radius:10px;font-size:.78rem;font-weight:800;font-family:var(--font);cursor:pointer;transition:.2s;}
-.gbtn:hover:not(:disabled){transform:translateY(-1px);}
+.ab-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.gbtn{
+  padding:12px 16px;border:none;border-radius:12px;
+  font-size:.82rem;font-weight:800;font-family:var(--font);
+  cursor:pointer;transition:.12s;flex:1;min-width:100px;
+  -webkit-appearance:none;
+}
+.gbtn:active:not(:disabled){transform:scale(.96);}
 .gbtn:disabled{opacity:.4;cursor:not-allowed;}
 .btn-roll{background:linear-gradient(135deg,var(--purple),#6d28d9);color:#fff;}
 .btn-buy{background:linear-gradient(135deg,var(--green),#00b894);color:#fff;}
@@ -91,50 +223,119 @@ select.inp{cursor:pointer;}
 .btn-jail{background:linear-gradient(135deg,var(--accent),#c0392b);color:#fff;}
 .btn-build{background:linear-gradient(135deg,var(--orange),#e17055);color:#fff;}
 .btn-nego{background:linear-gradient(135deg,var(--gold),#e17055);color:#000;}
-.dice-show{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:7px 12px;font-size:.82rem;font-weight:800;margin-bottom:7px;text-align:center;}
-.dice-double{text-align:center;font-size:.75rem;font-weight:800;color:var(--gold);margin-bottom:7px;animation:pulse 1s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-.ev-box{border-radius:10px;padding:12px;margin-bottom:8px;font-size:.8rem;line-height:1.6;}
-.ev-title{font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;opacity:.7;}
+.dice-show{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;font-size:.88rem;font-weight:800;margin-bottom:8px;text-align:center;}
+.dice-double{text-align:center;font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:8px;animation:pulse 1s infinite;}
+.ev-box{border-radius:12px;padding:12px;margin-bottom:10px;font-size:.82rem;line-height:1.6;}
+.ev-title{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;opacity:.7;}
 .ev-box.buy{background:rgba(46,213,115,.08);border:1px solid rgba(46,213,115,.25);}
 .ev-box.rent{background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.25);}
 .ev-box.card{background:rgba(162,155,254,.08);border:1px solid rgba(162,155,254,.25);}
 .ev-box.jail{background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.35);}
 .ev-box.tax{background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2);}
-.sab-sect{margin-top:7px;border-top:1px solid var(--border);padding-top:7px;}
-.sab-lbl{font-size:.63rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:4px;}
-.sab-btn{padding:4px 9px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.25);border-radius:8px;color:var(--accent);font-size:.7rem;font-weight:700;cursor:pointer;margin-right:4px;margin-bottom:4px;transition:.2s;}
-.sab-btn:hover{background:rgba(255,71,87,.2);}
-.log-scroll{flex:1;overflow-y:auto;padding:8px;}
-.log-entry{font-size:.68rem;padding:4px 7px;border-radius:5px;margin-bottom:2px;line-height:1.4;color:var(--text2);border-left:2px solid transparent;}
+.sab-sect{margin-top:8px;border-top:1px solid var(--border);padding-top:8px;}
+.sab-lbl{font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:5px;}
+.sab-btn{padding:6px 11px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.25);border-radius:8px;color:var(--accent);font-size:.72rem;font-weight:700;cursor:pointer;margin-right:5px;margin-bottom:5px;transition:.12s;}
+.sab-btn:active{background:rgba(255,71,87,.25);}
+
+/* Players pane */
+#pane-players{padding:8px;}
+.pc{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px;margin-bottom:8px;transition:.2s;}
+.pc.on{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple);}
+.pc.out{opacity:.35;}
+.pc-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.pc-emo{font-size:1.5rem;flex-shrink:0;}
+.pc-name{font-weight:800;font-size:.8rem;}
+.pc-role{font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-block;margin-top:2px;}
+.pc-money{font-size:1rem;font-weight:900;color:var(--green);margin-bottom:3px;}
+.pc-info{font-size:.65rem;color:var(--text3);}
+
+/* Log pane */
+#pane-log{padding:8px;}
+.log-entry{font-size:.72rem;padding:5px 8px;border-radius:6px;margin-bottom:3px;line-height:1.4;color:var(--text2);border-left:2px solid transparent;}
 .log-entry.new{color:var(--text);border-left-color:var(--purple);background:rgba(162,155,254,.06);}
-#overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+
+/* Waiting indicator (other player's turn) */
+.waiting-card{background:rgba(162,155,254,.06);border:1px solid rgba(162,155,254,.15);border-radius:14px;padding:16px;text-align:center;margin:4px 0;}
+
+/* ── MODAL ── */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);}
 #overlay.h{display:none;}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:22px;width:min(94vw,500px);max-height:88vh;overflow-y:auto;}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:24px 24px 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));
+  width:100%;max-width:600px;
+  max-height:88vh;overflow-y:auto;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal h2{font-family:var(--font2);font-size:.95rem;color:var(--gold);margin-bottom:12px;}
 .modal p{font-size:.8rem;color:var(--text2);margin-bottom:12px;line-height:1.6;}
 #m-extra{margin-bottom:10px;}
 #m-btns{display:flex;gap:8px;flex-wrap:wrap;}
-.mbtn{padding:8px 16px;border:none;border-radius:10px;font-size:.8rem;font-weight:800;font-family:var(--font);cursor:pointer;transition:.2s;}
-.mbtn:hover{transform:translateY(-1px);}
+.mbtn{padding:12px 18px;border:none;border-radius:12px;font-size:.82rem;font-weight:800;font-family:var(--font);cursor:pointer;transition:.12s;flex:1;}
+.mbtn:active{transform:scale(.96);}
 .mbtn-g{background:linear-gradient(135deg,var(--green),#00b894);color:#000;}
 .mbtn-r{background:linear-gradient(135deg,var(--accent),#c0392b);color:#fff;}
 .mbtn-o{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);}
 .mbtn-c{background:linear-gradient(135deg,var(--cyan),#0984e3);color:#fff;}
-.target-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;text-align:center;transition:.2s;display:inline-block;min-width:80px;margin:4px;}
-.target-btn:hover{border-color:var(--purple);background:rgba(162,155,254,.1);}
-#winner-screen{flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;min-height:100vh;}
+.target-btn{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;text-align:center;transition:.15s;display:inline-block;min-width:80px;margin:4px;}
+.target-btn:active{border-color:var(--purple);background:rgba(162,155,254,.1);}
+
+/* ── WINNER ── */
 .win-crown{font-size:4rem;margin-bottom:12px;}
-.win-title{font-family:var(--font2);font-size:2rem;background:linear-gradient(135deg,var(--gold),#ff9f43);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+.win-title{font-family:var(--font2);font-size:1.8rem;background:linear-gradient(135deg,var(--gold),#ff9f43);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
 .win-scores{width:100%;max-width:500px;margin:20px 0;}
 .wscore{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;}
 .wrank{font-size:1.3rem;}
 .wn{flex:1;font-size:.85rem;font-weight:700;text-align:left;}
 .wm{font-size:.9rem;font-weight:900;color:var(--green);}
-#notice{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(20,23,32,.96);border:1px solid var(--purple);border-radius:12px;padding:10px 20px;font-size:.85rem;font-weight:700;color:var(--text);z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5);}
-.online-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(46,213,115,.1);border:1px solid rgba(46,213,115,.3);border-radius:20px;padding:4px 12px;font-size:.72rem;font-weight:800;color:var(--green);}
-.online-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+
+/* ── NOTICE ── */
+#notice{
+  display:none;position:fixed;
+  top:calc(var(--topbar-h) + 12px);
+  left:50%;transform:translateX(-50%);
+  background:rgba(20,23,32,.96);border:1px solid var(--purple);
+  border-radius:14px;padding:10px 20px;
+  font-size:.85rem;font-weight:700;color:var(--text);
+  z-index:500;white-space:nowrap;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ── SCROLL BARS ── */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 </style>
+<!-- Firebase SDK — chargement fiable via esm.sh -->
+<script type="module">
+  async function loadFirebase() {
+    const CDNs = [
+      ['https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js',
+       'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js'],
+      ['https://esm.sh/firebase@10.12.2/app',
+       'https://esm.sh/firebase@10.12.2/database'],
+      ['https://cdn.jsdelivr.net/npm/firebase@10.12.2/app/+esm',
+       'https://cdn.jsdelivr.net/npm/firebase@10.12.2/database/+esm'],
+    ];
+    for (const [appUrl, dbUrl] of CDNs) {
+      try {
+        const [appMod, dbMod] = await Promise.all([import(appUrl), import(dbUrl)]);
+        window.__firebase = { ...appMod, ...dbMod };
+        window.dispatchEvent(new Event('firebase-ready'));
+        return;
+      } catch(e) { console.warn('CDN échoué, essai suivant...', appUrl, e); }
+    }
+    window.dispatchEvent(new CustomEvent('firebase-error', { detail: 'Tous les CDN ont échoué. Ouvre le fichier depuis un serveur web (GitHub Pages, etc.).' }));
+  }
+  loadFirebase();
+</script>
+
 </head>
 <body>
 
@@ -166,15 +367,15 @@ select.inp{cursor:pointer;}
     </div>
     <div class="cfg-field">
       <label class="cfg-label">apiKey</label>
-      <input class="inp" id="cfg-apiKey" placeholder="AIzaSy..." style="margin-bottom:0">
+      <input class="inp" id="cfg-apiKey" value="AIzaSyCsOwBNJriXVcjbi1OzbzcFbloFV9rPKhc" style="margin-bottom:0">
     </div>
     <div class="cfg-field">
       <label class="cfg-label">databaseURL</label>
-      <input class="inp" id="cfg-dbUrl" placeholder="https://mon-projet-rtdb.europe-west1.firebasedatabase.app" style="margin-bottom:0">
+      <input class="inp" id="cfg-dbUrl" placeholder="https://monopolu-loups-default-rtdb.europe-west1.firebasedatabase.app" style="margin-bottom:0">
     </div>
     <div class="cfg-field">
       <label class="cfg-label">projectId</label>
-      <input class="inp" id="cfg-projectId" placeholder="mon-projet-id" style="margin-bottom:0">
+      <input class="inp" id="cfg-projectId" value="monopolu-loups" style="margin-bottom:0">
     </div>
     <button class="btn-primary" style="margin-top:12px;margin-bottom:0" id="btn-connect-firebase">🔥 Connecter Firebase</button>
     <div id="cfg-status" style="font-size:.75rem;margin-top:10px;min-height:18px;"></div>
@@ -185,26 +386,224 @@ select.inp{cursor:pointer;}
   </div>
 
   <div id="menu-main" style="display:none;width:100%;max-width:560px;">
-    <div class="menu-card">
-      <div class="mc-title">👤 Ton profil</div>
-      <input id="inp-name" class="inp" type="text" placeholder="Ton prénom (ex: Emma)" maxlength="20">
-      <select id="sel-animal" class="inp"></select>
+    <!-- NAV TABS -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="menu-nav-tab on" onclick="switchMenuTab('jouer')">🎮 Jouer</button>
+      <button class="menu-nav-tab" onclick="switchMenuTab('roles')">🎭 Rôles</button>
+      <button class="menu-nav-tab" onclick="switchMenuTab('animaux')">🦊 Animaux</button>
+      <button class="menu-nav-tab" onclick="switchMenuTab('regles')">📖 Règles</button>
     </div>
-    <div class="menu-card">
-      <div class="mc-title">🏠 Créer une partie</div>
-      <button class="btn-secondary" id="btn-create-room">🎮 Créer la partie &amp; obtenir un code</button>
+
+    <!-- TAB JOUER -->
+    <div id="mtab-jouer" class="menu-tab-pane on">
+      <div class="menu-card">
+        <div class="mc-title">👤 Ton profil</div>
+        <input id="inp-name" class="inp" type="text" placeholder="Ton prénom (ex: Emma)" maxlength="20">
+        <select id="sel-animal" class="inp"></select>
+      </div>
+      <div class="menu-card">
+        <div class="mc-title">🏠 Créer une partie</div>
+        <button class="btn-secondary" id="btn-create-room">🎮 Créer la partie &amp; obtenir un code</button>
+      </div>
+      <div class="menu-card">
+        <div class="mc-title">🔗 Rejoindre une partie</div>
+        <input id="inp-code" class="inp" type="text" placeholder="Code à 6 caractères (ex: AB3X7K)" maxlength="6" style="text-transform:uppercase;letter-spacing:.15em">
+        <button class="btn-primary" id="btn-join-room">🚀 Rejoindre</button>
+      </div>
+      <div style="text-align:center;">
+        <button id="btn-change-cfg" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:var(--text3);font-size:.75rem;font-weight:700;cursor:pointer;">
+          ⚙️ Changer de config Firebase
+        </button>
+      </div>
     </div>
-    <div class="menu-card">
-      <div class="mc-title">🔗 Rejoindre une partie</div>
-      <input id="inp-code" class="inp" type="text" placeholder="Code à 6 caractères (ex: AB3X7K)" maxlength="6" style="text-transform:uppercase;letter-spacing:.15em">
-      <button class="btn-primary" id="btn-join-room">🚀 Rejoindre</button>
+
+    <!-- TAB RÔLES -->
+    <div id="mtab-roles" class="menu-tab-pane" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:4px;">🎭 Les 20 Rôles Secrets — attribués aléatoirement au lancement</div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐺</span><span style="font-family:var(--font2);font-size:.85rem;color:#ff6b6b">Loup Alpha</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ +100💰 au Départ. Adversaires paient +10% chez toi.</div><div style="font-size:.72rem;color:#facc15">⚡ Ne peut posséder qu'une seule Gare.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦊</span><span style="font-family:var(--font2);font-size:.85rem;color:#ffa502">Renard Espion</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Loyers réduits de 20%. Vois le rôle d'un adversaire.</div><div style="font-size:.72rem;color:#facc15">⚡ Alliances 3 tours au lieu de 5.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🏹</span><span style="font-family:var(--font2);font-size:.85rem;color:#2ed573">Chasseur</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Immunisé contre un sabotage. Récupère 50% du vol.</div><div style="font-size:.72rem;color:#facc15">⚡ −15💰 au Départ.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🔮</span><span style="font-family:var(--font2);font-size:.85rem;color:#a29bfe">Sorcière</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Annule un loyer OU sort de prison gratuitement (1×).</div><div style="font-size:.72rem;color:#facc15">⚡ Caisses de la Forêt donnent −20💰.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🧑‍🌾</span><span style="font-family:var(--font2);font-size:.85rem;color:#74b9ff">Villageois</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ +50💰 chaque fois qu'un adversaire achète.</div><div style="font-size:.72rem;color:#facc15">⚡ −25💰 au Départ.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">💼</span><span style="font-family:var(--font2);font-size:.85rem;color:#ffd32a">Banquier</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Taxes ÷2. Achats −10%. Maisons −15%. Emprunts à 0%.</div><div style="font-size:.72rem;color:#facc15">⚡ Ne peut pas jouer de carte Sabotage.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">⚔️</span><span style="font-family:var(--font2);font-size:.85rem;color:#e84393">Guerrier</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Vole 5% à un joueur à chaque double lancé.</div><div style="font-size:.72rem;color:#facc15">⚡ Achats +10💰.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🌿</span><span style="font-family:var(--font2);font-size:.85rem;color:#00b894">Druide</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ +80💰 cases spéciales. Immunisé Séisme & Météorite.</div><div style="font-size:.72rem;color:#facc15">⚡ Constructions +8%.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🎰</span><span style="font-family:var(--font2);font-size:.85rem;color:#fd79a8">Parieur</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Loterie ×1.5. Bonus/Caisses ×1.5.</div><div style="font-size:.72rem;color:#facc15">⚡ Taxes +15💰.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🛡️</span><span style="font-family:var(--font2);font-size:.85rem;color:#00cec9">Protecteur</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Bloque une saisie. +100💰 si adversaire va en prison.</div><div style="font-size:.72rem;color:#facc15">⚡ Garde 80💰 en réserve minimum.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🔥</span><span style="font-family:var(--font2);font-size:.85rem;color:#ff4500">Pyromane</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Incendie gratuit 1×. +50💰 par maison adverse détruite.</div><div style="font-size:.72rem;color:#facc15">⚡ Achats +15💰.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">💀</span><span style="font-family:var(--font2);font-size:.85rem;color:#7f8c8d">Nécromancien</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Récupère 20% fortune d'un joueur éliminé. +100💰/élim.</div><div style="font-size:.72rem;color:#facc15">⚡ Loyers encaissés −8%.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🎭</span><span style="font-family:var(--font2);font-size:.85rem;color:#9b59b6">Saboteur</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Commence avec 2 cartes sabotage. +1 tous les 5 tours.</div><div style="font-size:.72rem;color:#facc15">⚡ Loyers encaissés −10%.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🏥</span><span style="font-family:var(--font2);font-size:.85rem;color:#27ae60">Médecin</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ +100💰 quand adversaire paie taxe. Prison ignorée 1×.</div><div style="font-size:.72rem;color:#facc15">⚡ −20💰 de frais fixes tous les 8 tours.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🔭</span><span style="font-family:var(--font2);font-size:.85rem;color:#f39c12">Prophète</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Prédit les dés → si correct +200💰. Cartes Destin +50💰.</div><div style="font-size:.72rem;color:#facc15">⚡ Prédiction fausse → −30💰.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">👑</span><span style="font-family:var(--font2);font-size:.85rem;color:#c0392b">Roi Déchu</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Commence avec +400💰. +10💰/tour par propriété achetée.</div><div style="font-size:.72rem;color:#facc15">⚡ Loyers payés +8%.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🌊</span><span style="font-family:var(--font2);font-size:.85rem;color:#0891b2">Navigateur</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Lance 3 dés, garde les 2 meilleurs. Téléport Gare 1×/tour.</div><div style="font-size:.72rem;color:#facc15">⚡ Utilités & Gares +20💰 à l'achat.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🧙</span><span style="font-family:var(--font2);font-size:.85rem;color:#7c3aed">Archimage</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Inverse un loyer 1× (proprio te paye). Annule une carte.</div><div style="font-size:.72rem;color:#facc15">⚡ −25💰 au Départ.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🤡</span><span style="font-family:var(--font2);font-size:.85rem;color:#ec4899">Bouffon</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Case spéciale → dé secret entre −100💰 et +400💰.</div><div style="font-size:.72rem;color:#facc15">⚡ 5% chance que ton lancer soit annulé.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦁</span><span style="font-family:var(--font2);font-size:.85rem;color:#b45309">Inquisiteur</span></div><div style="font-size:.72rem;color:var(--green);margin-bottom:3px">✅ Adversaires +2000💰 → te doivent 100💰/round. +50💰/loyer payé.</div><div style="font-size:.72rem;color:#facc15">⚡ Achat raté faute d'argent → −25💰 supplémentaires.</div></div>
     </div>
-    <div style="text-align:center;">
-      <button id="btn-change-cfg" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:var(--text3);font-size:.75rem;font-weight:700;cursor:pointer;">
-        ⚙️ Changer de config Firebase
-      </button>
+
+    <!-- TAB ANIMAUX -->
+    <div id="mtab-animaux" class="menu-tab-pane" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:4px;">🦊 Les 24 Animaux — choisis librement au début</div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦊</span><span style="font-weight:800">Renard</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Ruse</span></div><div style="font-size:.77rem;color:var(--text2)">Loyers réduits de 10%.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐺</span><span style="font-weight:800">Loup</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Force</span></div><div style="font-size:.77rem;color:var(--text2)">+50💰 à chaque passage au Départ.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦝</span><span style="font-weight:800">Raton Laveur</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Furtivité</span></div><div style="font-size:.77rem;color:var(--text2)">Vole 5% de chaque Taxe.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐻</span><span style="font-weight:800">Ours</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Résistance</span></div><div style="font-size:.77rem;color:var(--text2)">Immunisé contre une case Taxe (1× par partie).</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦁</span><span style="font-weight:800">Lion</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Prestige</span></div><div style="font-size:.77rem;color:var(--text2)">Loyer de ta 1ère propriété doublé.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐯</span><span style="font-weight:800">Tigre</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Agilité</span></div><div style="font-size:.77rem;color:var(--text2)">Évite la prison sur un double.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐮</span><span style="font-weight:800">Vache</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Chance</span></div><div style="font-size:.77rem;color:var(--text2)">+30💰 à chaque Caisse de la Forêt.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐷</span><span style="font-weight:800">Cochon</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Épargne</span></div><div style="font-size:.77rem;color:var(--text2)">Maisons et hôtels coûtent −20💰.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐸</span><span style="font-weight:800">Grenouille</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Magie</span></div><div style="font-size:.77rem;color:var(--text2)">Téléportation unique sur n'importe quelle case (1×).</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦔</span><span style="font-weight:800">Hérisson</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Défense</span></div><div style="font-size:.77rem;color:var(--text2)">Bloque la première carte sabotage reçue.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦅</span><span style="font-weight:800">Aigle</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Vision</span></div><div style="font-size:.77rem;color:var(--text2)">+60💰 chaque fois qu'un adversaire construit.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦋</span><span style="font-weight:800">Papillon</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Liberté</span></div><div style="font-size:.77rem;color:var(--text2)">Premier emprisonnement ignoré.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐉</span><span style="font-weight:800">Dragon</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Terreur</span></div><div style="font-size:.77rem;color:var(--text2)">+10% sur tous les loyers encaissés.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦌</span><span style="font-weight:800">Cerf</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Grâce</span></div><div style="font-size:.77rem;color:var(--text2)">+80💰 au Parking Gratuit.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐬</span><span style="font-weight:800">Dauphin</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Fluidité</span></div><div style="font-size:.77rem;color:var(--text2)">Récupère 50% de chaque Taxe payée.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦉</span><span style="font-weight:800">Hibou</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Sagesse</span></div><div style="font-size:.77rem;color:var(--text2)">Découvre secrètement le rôle d'un adversaire au début.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐊</span><span style="font-weight:800">Crocodile</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Prédateur</span></div><div style="font-size:.77rem;color:var(--text2)">Vole 80💰 au joueur le plus riche tous les 10 tours.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦚</span><span style="font-weight:800">Paon</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Splendeur</span></div><div style="font-size:.77rem;color:var(--text2)">1ère propriété de chaque thème reçoit une maison offerte.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🌕</span><span style="font-weight:800">Loup-Garou</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Lycanthropie</span></div><div style="font-size:.77rem;color:var(--text2)">Loyers ×1.5 pendant la Nuit des Loups.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐙</span><span style="font-weight:800">Pieuvre</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Domination</span></div><div style="font-size:.77rem;color:var(--text2)">Propriétés dans 3 thèmes différents → +200💰 bonus.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦈</span><span style="font-weight:800">Requin</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Férocité</span></div><div style="font-size:.77rem;color:var(--text2)">Adversaires en prison paient +15% de loyer.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦜</span><span style="font-weight:800">Perroquet</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Mimétisme</span></div><div style="font-size:.77rem;color:var(--text2)">Copie le bonus animal d'un adversaire une fois.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🐘</span><span style="font-weight:800">Éléphant</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Solidité</span></div><div style="font-size:.77rem;color:var(--text2)">Immunisé contre le Séisme et la Météorite.</div></div>
+      <div class="i-card" style="background:var(--bg2);border-radius:16px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:1.5rem">🦩</span><span style="font-weight:800">Flamant</span><span style="font-size:.65rem;color:var(--text3);margin-left:4px">Élégance</span></div><div style="font-size:.77rem;color:var(--text2)">+100💰 à chaque case Repos.</div></div>
     </div>
-  </div>
+
+    <!-- TAB RÈGLES -->
+    <div id="mtab-regles" class="menu-tab-pane" style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- Tour de jeu -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(46,213,115,.18),rgba(46,213,115,.06));border-bottom:1px solid rgba(46,213,115,.25);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🎮</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:#2ed573;font-weight:900;letter-spacing:.5px">TOUR DE JEU</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border-radius:10px;padding:12px 14px;"><div style="width:28px;height:28px;border-radius:8px;background:rgba(46,213,115,.2);border:1px solid rgba(46,213,115,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;font-weight:900;color:#2ed573">1</div><div style="font-size:.82rem;color:var(--text2);line-height:1.6"><strong style="color:var(--text)">Lance les 2 dés</strong> — avance ton pion du total sur le plateau.</div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border-radius:10px;padding:12px 14px;"><div style="width:28px;height:28px;border-radius:8px;background:rgba(46,213,115,.2);border:1px solid rgba(46,213,115,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;font-weight:900;color:#2ed573">2</div><div style="font-size:.82rem;color:var(--text2);line-height:1.6"><strong style="color:var(--text)">Résous la case</strong> — achète, paye un loyer, pioche une carte ou subis l'événement.</div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border-radius:10px;padding:12px 14px;"><div style="width:28px;height:28px;border-radius:8px;background:rgba(46,213,115,.2);border:1px solid rgba(46,213,115,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;font-weight:900;color:#2ed573">3</div><div style="font-size:.82rem;color:var(--text2);line-height:1.6"><strong style="color:var(--text)">Fin du tour</strong> — clique le bouton ou joue une carte Sabotage avant si tu en as !</div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:10px;padding:12px 14px;"><span style="font-size:1.2rem;flex-shrink:0">✨</span><div style="font-size:.82rem;color:var(--text2);line-height:1.6"><strong style="color:var(--gold)">DOUBLE !</strong> Deux dés identiques = tu rejoues immédiatement après avoir résolu ta case.</div></div>
+        </div>
+      </div>
+
+      <!-- Cases fixes -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(162,155,254,.18),rgba(162,155,254,.06));border-bottom:1px solid rgba(162,155,254,.25);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">📌</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:var(--purple);font-weight:900;letter-spacing:.5px">CASES FIXES DU PLATEAU</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border:1px solid #2ed57322;border-radius:10px;padding:12px 14px;"><div style="width:36px;height:36px;border-radius:10px;background:#2ed57322;border:1px solid #2ed57344;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem">🏁</div><div style="flex:1"><div style="font-size:.85rem;font-weight:900;color:#2ed573;margin-bottom:3px">Départ <span style="font-size:.65rem;padding:1px 7px;border-radius:20px;background:#2ed57318;color:#2ed573;font-weight:800">Case 0</span></div><div style="font-size:.78rem;color:var(--text2);line-height:1.5">Chaque passage te rapporte <strong>+200💰</strong>.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border:1px solid #a29bfe22;border-radius:10px;padding:12px 14px;"><div style="width:36px;height:36px;border-radius:10px;background:#a29bfe22;border:1px solid #a29bfe44;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem">⛓️</div><div style="flex:1"><div style="font-size:.85rem;font-weight:900;color:#a29bfe;margin-bottom:3px">Prison / Visite <span style="font-size:.65rem;padding:1px 7px;border-radius:20px;background:#a29bfe18;color:#a29bfe;font-weight:800">Case 25</span></div><div style="font-size:.78rem;color:var(--text2);line-height:1.5">Atterrir = simple visite. Seul un envoi actif te bloque jusqu'à 3 tours.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border:1px solid #00b89422;border-radius:10px;padding:12px 14px;"><div style="width:36px;height:36px;border-radius:10px;background:#00b89422;border:1px solid #00b89444;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem">🌿</div><div style="flex:1"><div style="font-size:.85rem;font-weight:900;color:#00b894;margin-bottom:3px">Parking Gratuit <span style="font-size:.65rem;padding:1px 7px;border-radius:20px;background:#00b89418;color:#00b894;font-weight:800">Case 50</span></div><div style="font-size:.78rem;color:var(--text2);line-height:1.5">Rien ne se passe.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border:1px solid #ff475722;border-radius:10px;padding:12px 14px;"><div style="width:36px;height:36px;border-radius:10px;background:#ff475722;border:1px solid #ff475744;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem">🚔</div><div style="flex:1"><div style="font-size:.85rem;font-weight:900;color:#ff4757;margin-bottom:3px">En Prison ! <span style="font-size:.65rem;padding:1px 7px;border-radius:20px;background:#ff475718;color:#ff4757;font-weight:800">Case 75</span></div><div style="font-size:.78rem;color:var(--text2);line-height:1.5">Direction prison. Sorts avec un double ou paye 50💰. Après 3 tours tu sors automatiquement.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border:1px solid #ffd70022;border-radius:10px;padding:12px 14px;"><div style="width:36px;height:36px;border-radius:10px;background:#ffd70022;border:1px solid #ffd70044;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem">🚂</div><div style="flex:1"><div style="font-size:.85rem;font-weight:900;color:#ffd700;margin-bottom:3px">Gares × 4 <span style="font-size:.65rem;padding:1px 7px;border-radius:20px;background:#ffd70018;color:#ffd700;font-weight:800">200💰 chacune</span></div><div style="font-size:.78rem;color:var(--text2);line-height:1.5">Loyer : 1 gare=25💰 · 2=50💰 · 3=100💰 · 4=200💰</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg3);border:1px solid #00d2d322;border-radius:10px;padding:12px 14px;"><div style="width:36px;height:36px;border-radius:10px;background:#00d2d322;border:1px solid #00d2d344;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem">🪄</div><div style="flex:1"><div style="font-size:.85rem;font-weight:900;color:#00d2d3;margin-bottom:3px">Utilités × 2 <span style="font-size:.65rem;padding:1px 7px;border-radius:20px;background:#00d2d318;color:#00d2d3;font-weight:800">150💰 chacune</span></div><div style="font-size:.78rem;color:var(--text2);line-height:1.5">Loyer = dés × 4 (×10 si tu possèdes les deux).</div></div></div>
+        </div>
+      </div>
+
+      <!-- Construction -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(255,127,80,.18),rgba(255,127,80,.05));border-bottom:1px solid rgba(255,127,80,.25);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🏠</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:#ff7f50;font-weight:900;letter-spacing:.5px">CONSTRUCTION</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.1rem;flex-shrink:0">📦</span><div><div style="font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:2px">Posséder tout le groupe</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tu dois avoir toutes les propriétés d'un même thème avant de construire.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.1rem;flex-shrink:0">⚖️</span><div><div style="font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:2px">Construction équilibrée</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">1 maison sur chaque case → puis 2 → puis 3 → puis 4 → puis hôtel.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.1rem;flex-shrink:0">💰</span><div><div style="font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:2px">Coûts</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Maison = 50% du prix. Hôtel = 75% du prix.</div></div></div>
+        </div>
+      </div>
+
+      <!-- Prison -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,71,87,.2);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(255,71,87,.15),rgba(255,71,87,.04));border-bottom:1px solid rgba(255,71,87,.2);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">⛓️</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:var(--accent);font-weight:900;letter-spacing:.5px">PRISON</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:130px;background:rgba(46,213,115,.08);border:1px solid rgba(46,213,115,.2);border-radius:9px;padding:10px 12px;text-align:center"><div style="font-size:1.2rem;margin-bottom:4px">🎲</div><div style="font-size:.78rem;font-weight:800;color:#2ed573;margin-bottom:3px">Faire un Double</div><div style="font-size:.72rem;color:var(--text2)">Sors gratuitement</div></div>
+            <div style="flex:1;min-width:130px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:9px;padding:10px 12px;text-align:center"><div style="font-size:1.2rem;margin-bottom:4px">💰</div><div style="font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:3px">Payer 50💰</div><div style="font-size:.72rem;color:var(--text2)">Sors immédiatement</div></div>
+            <div style="flex:1;min-width:130px;background:rgba(255,71,87,.07);border:1px solid rgba(255,71,87,.15);border-radius:9px;padding:10px 12px;text-align:center"><div style="font-size:1.2rem;margin-bottom:4px">⏳</div><div style="font-size:.78rem;font-weight:800;color:var(--accent);margin-bottom:3px">3 Tours max</div><div style="font-size:.72rem;color:var(--text2)">Sortie automatique (−50💰)</div></div>
+          </div>
+          <div style="font-size:.77rem;color:var(--text2);padding:8px 12px;background:var(--bg3);border-radius:8px;">ℹ️ En prison, tu continues à <strong style="color:var(--text)">encaisser les loyers</strong> de tes propriétés.</div>
+        </div>
+      </div>
+
+      <!-- Sabotages -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,71,87,.25);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(255,71,87,.18),rgba(255,71,87,.05));border-bottom:1px solid rgba(255,71,87,.25);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">💣</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:var(--accent);font-weight:900;letter-spacing:.5px">CARTES SABOTAGE</span>
+        </div>
+        <div style="padding:14px 18px;">
+          <div style="font-size:.78rem;color:var(--text2);margin-bottom:12px;padding:8px 12px;background:rgba(255,71,87,.07);border-radius:8px;border-left:3px solid var(--accent)">Gagnées aléatoirement (20% de chance par tour). Jouables à tout moment pendant ton tour.</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff475720;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ff475718;border:1px solid #ff475735;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🐺</div><div><span style="font-size:.82rem;font-weight:800;color:#ff4757">Hurlement</span> <span style="font-size:.72rem;color:var(--text3)">— La cible passe son tour.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff7f5020;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ff7f5018;border:1px solid #ff7f5035;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🍄</div><div><span style="font-size:.82rem;font-weight:800;color:#ff7f50">Champignons</span> <span style="font-size:.72rem;color:var(--text3)">— Vole 100💰 à la cible.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #a29bfe20;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#a29bfe18;border:1px solid #a29bfe35;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🌑</div><div><span style="font-size:.82rem;font-weight:800;color:#a29bfe">Nuit Sombre</span> <span style="font-size:.72rem;color:var(--text3)">— Loyers ×2 pendant 2 tours.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff9f4320;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ff9f4318;border:1px solid #ff9f4335;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🦊</div><div><span style="font-size:.82rem;font-weight:800;color:#ff9f43">Ruse</span> <span style="font-size:.72rem;color:var(--text3)">— Vole 50💰 à la cible.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #2ed57320;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#2ed57318;border:1px solid #2ed57335;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🌿</div><div><span style="font-size:.82rem;font-weight:800;color:#2ed573">Passe Gratuit</span> <span style="font-size:.72rem;color:var(--text3)">— Ton prochain loyer est annulé.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff475720;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ff475718;border:1px solid #ff475735;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🔥</div><div><span style="font-size:.82rem;font-weight:800;color:#ff4757">Incendie</span> <span style="font-size:.72rem;color:var(--text3)">— Détruit une maison adverse.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #636e7220;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#636e7218;border:1px solid #636e7235;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🚫</div><div><span style="font-size:.82rem;font-weight:800;color:#636e72">Blocus</span> <span style="font-size:.72rem;color:var(--text3)">— Bloque les achats pendant 2 tours.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff475720;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ff475718;border:1px solid #ff475735;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🦅</div><div><span style="font-size:.82rem;font-weight:800;color:#ff4757">Raid Éclair</span> <span style="font-size:.72rem;color:var(--text3)">— Vole 200💰 d'un coup.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff475720;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ff475718;border:1px solid #ff475735;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🚔</div><div><span style="font-size:.82rem;font-weight:800;color:#ff4757">Dénonciation</span> <span style="font-size:.72rem;color:var(--text3)">— Envoie la cible en prison.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #00d2d320;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#00d2d318;border:1px solid #00d2d335;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🧊</div><div><span style="font-size:.82rem;font-weight:800;color:#00d2d3">Gel Total</span> <span style="font-size:.72rem;color:var(--text3)">— Aucun loyer pendant 2 tours.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #a29bfe20;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#a29bfe18;border:1px solid #a29bfe35;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🌀</div><div><span style="font-size:.82rem;font-weight:800;color:#a29bfe">Vortex</span> <span style="font-size:.72rem;color:var(--text3)">— Téléporte la cible au Départ.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ffd70020;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ffd70018;border:1px solid #ffd70035;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">💎</div><div><span style="font-size:.82rem;font-weight:800;color:#ffd700">Vol de Titre</span> <span style="font-size:.72rem;color:var(--text3)">— Vole une propriété aléatoire.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #a855f720;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#a855f718;border:1px solid #a855f735;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🪄</div><div><span style="font-size:.82rem;font-weight:800;color:#a855f7">Malédiction</span> <span style="font-size:.72rem;color:var(--text3)">— −50% loyers pendant 3 tours.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff9f4320;border-radius:9px;padding:9px 12px;"><div style="width:32px;height:32px;border-radius:9px;background:#ff9f4318;border:1px solid #ff9f4335;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🏴‍☠️</div><div><span style="font-size:.82rem;font-weight:800;color:#ff9f43">Braquage</span> <span style="font-size:.72rem;color:var(--text3)">— Vole 15% (max 300💰).</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banque -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(0,210,211,.18),rgba(0,210,211,.05));border-bottom:1px solid rgba(0,210,211,.25);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🏦</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:var(--cyan);font-weight:900;letter-spacing:.5px">BANQUE</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.1rem;flex-shrink:0">💹</span><div><div style="font-size:.82rem;font-weight:800;color:var(--cyan);margin-bottom:2px">Dépôts — +10% tous les 5 tours</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Dépose de l'argent et reçois des intérêts. Retire quand tu veux.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.1rem;flex-shrink:0">💳</span><div><div style="font-size:.82rem;font-weight:800;color:var(--gold);margin-bottom:2px">Emprunts — jusqu'à 500💰 (+20%)</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Rembourse avec 20% d'intérêts. Le 💼 Banquier emprunte à 0%.</div></div></div>
+        </div>
+      </div>
+
+      <!-- Négociation -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(255,215,0,.14),rgba(255,215,0,.04));border-bottom:1px solid rgba(255,215,0,.2);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🤝</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:var(--gold);font-weight:900;letter-spacing:.5px">NÉGOCIATION &amp; ALLIANCES</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><div style="width:30px;height:30px;border-radius:8px;background:#ffd70018;border:1px solid #ffd70035;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">💱</div><div><div style="font-size:.82rem;font-weight:800;color:#ffd700;margin-bottom:2px">Échange bilatéral</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Propose de l'argent ou une propriété contre ce que tu veux.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><div style="width:30px;height:30px;border-radius:8px;background:#00d2d318;border:1px solid #00d2d335;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">🤝</div><div><div style="font-size:.82rem;font-weight:800;color:#00d2d3;margin-bottom:2px">Alliance</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Ni toi ni ton allié ne vous payez de loyer mutuellement pendant 5 tours.</div></div></div>
+        </div>
+      </div>
+
+      <!-- Zone Mystère -->
+      <div style="background:var(--bg2);border:1px solid rgba(147,51,234,.3);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(147,51,234,.22),rgba(147,51,234,.07));border-bottom:1px solid rgba(147,51,234,.3);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🟣</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:#a855f7;font-weight:900;letter-spacing:.5px">ZONE MYSTÈRE</span>
+        </div>
+        <div style="padding:16px 18px;">
+          <div style="font-size:.8rem;color:var(--text2);margin-bottom:12px;line-height:1.6">Ces cases <strong style="color:var(--text)">multiplient ton mouvement</strong> par un facteur appliqué à la valeur de tes dés.</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #22c55e2a;border-radius:9px;padding:9px 13px;"><div style="min-width:44px;text-align:center;font-size:.88rem;font-weight:900;padding:4px 8px;border-radius:7px;background:#22c55e20;color:#22c55e;border:1px solid #22c55e40">×+2</div><div><span style="font-size:.82rem;font-weight:800;color:var(--text)">🌌 Nexus</span><span style="font-size:.74rem;color:var(--text3);margin-left:7px">Avances encore 2× la valeur des dés.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ef44442a;border-radius:9px;padding:9px 13px;"><div style="min-width:44px;text-align:center;font-size:.88rem;font-weight:900;padding:4px 8px;border-radius:7px;background:#ef444420;color:#ef4444;border:1px solid #ef444440">×−1</div><div><span style="font-size:.82rem;font-weight:800;color:var(--text)">🌀 Vortex</span><span style="font-size:.74rem;color:var(--text3);margin-left:7px">Recules d'une fois la valeur des dés.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #22c55e2a;border-radius:9px;padding:9px 13px;"><div style="min-width:44px;text-align:center;font-size:.88rem;font-weight:900;padding:4px 8px;border-radius:7px;background:#22c55e20;color:#22c55e;border:1px solid #22c55e40">×+3</div><div><span style="font-size:.82rem;font-weight:800;color:var(--text)">🚪 Portail</span><span style="font-size:.74rem;color:var(--text3);margin-left:7px">Avances 3× — le plus puissant !</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ef44442a;border-radius:9px;padding:9px 13px;"><div style="min-width:44px;text-align:center;font-size:.88rem;font-weight:900;padding:4px 8px;border-radius:7px;background:#ef444420;color:#ef4444;border:1px solid #ef444440">×−2</div><div><span style="font-size:.82rem;font-weight:800;color:var(--text)">⚡ Rift</span><span style="font-size:.74rem;color:var(--text3);margin-left:7px">Recules 2× — danger !</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #86efac2a;border-radius:9px;padding:9px 13px;"><div style="min-width:44px;text-align:center;font-size:.88rem;font-weight:900;padding:4px 8px;border-radius:7px;background:#86efac20;color:#86efac;border:1px solid #86efac40">×+1</div><div><span style="font-size:.82rem;font-weight:800;color:var(--text)">🌑 Éclipse</span><span style="font-size:.74rem;color:var(--text3);margin-left:7px">Avances encore une fois la valeur des dés.</span></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- fin tab-regles -->
+  </div><!-- fin menu-main -->
 </div>
 
 <!-- LOBBY -->
@@ -234,23 +633,63 @@ select.inp{cursor:pointer;}
 
 <!-- GAME -->
 <div id="game-screen" class="screen">
-  <div class="game-left">
-    <div class="pane-title">👥 Joueurs</div>
-    <div id="players-panel" class="players-panel"></div>
+  <!-- Top bar -->
+  <div class="g-topbar">
+    <div id="g-hturn">Monopoly des Loups</div>
+    <div class="online-badge" style="font-size:.62rem;padding:3px 8px"><span class="online-dot"></span><span id="room-code-badge"></span></div>
+    <button class="tb-btn" id="btn-nego-top" title="Négociation">🤝</button>
+    <button class="tb-btn" id="btn-cards-top" title="Cartes">🃏</button>
+    <button class="tb-btn" id="btn-quit-game" title="Quitter">✕</button>
   </div>
-  <div class="game-main">
-    <div class="g-topbar">
-      <div id="g-hturn">Monopoly des Loups</div>
-      <div class="online-badge" style="font-size:.65rem"><span class="online-dot"></span><span id="room-code-badge"></span></div>
-      <button class="tb-btn" id="btn-nego-top">🤝</button>
-      <button class="tb-btn" id="btn-quit-game">✕ Quitter</button>
+
+  <!-- Board area -->
+  <div id="board-area">
+    <div id="board-wrap"><div id="board-scaler"><div id="board-container"></div></div></div>
+
+    <!-- Zoom controls -->
+    <div id="zoom-bar">
+      <button class="zoom-btn active" id="zbtn-focus" title="Vue joueur" onclick="setZoomMode('focus')">🎯</button>
+      <button class="zoom-btn" id="zbtn-mid" title="Vue équilibrée" onclick="setZoomMode('mid')">⚖️</button>
+      <button class="zoom-btn" id="zbtn-full" title="Plateau entier" onclick="setZoomMode('full')">🗺️</button>
     </div>
-    <div id="board-wrap"><div id="board-container"></div></div>
-    <div class="action-bar" id="action-bar"></div>
+
+    <!-- Current position hint -->
+    <div id="my-pos-hint">📍 Case 0</div>
   </div>
-  <div class="game-right">
-    <div class="pane-title">📋 Journal</div>
-    <div class="log-scroll"><div id="log-list"></div></div>
+
+  <!-- Bottom panel: action + tabs -->
+  <div id="bottom-panel">
+    <div id="panel-handle"></div>
+
+    <!-- Tab content -->
+    <div id="pane-action" class="gpane active">
+      <div id="action-bar"></div>
+    </div>
+    <div id="pane-players" class="gpane">
+      <div id="players-panel"></div>
+    </div>
+    <div id="pane-log" class="gpane">
+      <div id="log-list"></div>
+    </div>
+  </div>
+
+  <!-- Bottom navigation -->
+  <div id="bottom-nav">
+    <button class="bnav-btn active" data-pane="action" onclick="switchPane('action',this)">
+      <span class="bnav-icon">🎮</span>
+      <span class="bnav-label">Action</span>
+      <div class="bnav-indicator"></div>
+    </button>
+    <button class="bnav-btn" data-pane="players" onclick="switchPane('players',this)">
+      <span class="bnav-icon">👥</span>
+      <span class="bnav-label">Joueurs</span>
+      <div class="bnav-indicator"></div>
+    </button>
+    <button class="bnav-btn" data-pane="log" onclick="switchPane('log',this)">
+      <span class="bnav-icon">📋</span>
+      <span class="bnav-label">Journal</span>
+      <div class="bnav-indicator"></div>
+    </button>
   </div>
 </div>
 
@@ -351,44 +790,210 @@ const SAB=[
 ];
 
 /* ═══════════════════════════════════════
-   CONSTRUCTION PLATEAU (100 cases, déterministe)
+   CONSTRUCTION PLATEAU — Style Monopoly réel
+   100 cases : 4 côtés × 24 cases + 4 coins
+   Groupes de 2-3 props par thème/couleur
 ═══════════════════════════════════════ */
 function buildBoard(){
-  const fixed={
-    0:{type:'special',name:'Départ',special:'go'},
-    25:{type:'special',name:'Prison / Visite',special:'jail_visit'},
-    50:{type:'special',name:'Parking Gratuit',special:'free_park'},
-    75:{type:'special',name:'En Prison !',special:'go_jail'},
-    12:{type:'special',name:'Gare Universelle',special:'station',price:200},
-    37:{type:'special',name:'Gare Galactique',special:'station',price:200},
-    62:{type:'special',name:'Gare Orientale',special:'station',price:200},
-    87:{type:'special',name:'Gare Polaire',special:'station',price:200},
-    18:{type:'special',name:'Puits Magique',special:'utility',price:150},
-    56:{type:'special',name:'Centrale Énergie',special:'utility',price:150},
-  };
-  const freeSlots=[];
-  for(let i=0;i<100;i++){if(!fixed[i])freeSlots.push(i);}
-  const allProps=[];
-  THEMES.forEach(th=>{
-    th.props.forEach((nm,pi)=>{
-      if(th.isZM){
-        allProps.push({type:'zone_mystere',name:nm,theme:th.id,color:th.c,ti:th.i,price:0,rent:[0,0,0,0,0,0],group:th.id+'-g',zmMult:th.zmMult[pi]});
-      } else {
-        allProps.push({type:'prop',name:nm,theme:th.id,color:th.c,ti:th.i,price:th.prices[pi],rent:th.rents[pi],group:th.id+'-g'});
-      }
-    });
-  });
-  const dynTypes=['chest','chance','tax200','tax100','bonus100','bonus50','lottery','rest','wolf_night','rent_freeze','miracle','festival','earthquake','meteor','rainbow','pillage','peace','double_turn'];
-  const board=new Array(100);
-  for(const[k,v] of Object.entries(fixed)) board[Number(k)]={...v};
-  let propI=0,dynI=0;
-  for(let i=0;i<freeSlots.length;i++){
-    const slot=freeSlots[i];
-    if(propI<allProps.length){board[slot]={...allProps[propI++]};}
-    else{const sp=dynTypes[dynI++%dynTypes.length];board[slot]={type:'special',name:sp,special:sp};}
+  // Plateau fixe style Monopoly authentique
+  // Coins : 0=Départ, 25=Prison, 50=Parking, 75=Aller en Prison
+  // Gares : 6, 31, 56, 81
+  // Services : 16, 66
+  // Cartes & taxes distribués comme le vrai Monopoly
+  const board = new Array(100);
+
+  // ── Coins ──
+  board[0]  = {type:'special',name:'Départ',special:'go'};
+  board[25] = {type:'special',name:'Prison / Visite',special:'jail_visit'};
+  board[50] = {type:'special',name:'Parking Gratuit',special:'free_park'};
+  board[75] = {type:'special',name:'En Prison !',special:'go_jail'};
+
+  // ── Gares (positions 6, 31, 56, 81) ──
+  board[6]  = {type:'special',name:'Gare Universelle',special:'station',price:200};
+  board[31] = {type:'special',name:'Gare Galactique', special:'station',price:200};
+  board[56] = {type:'special',name:'Gare Orientale',  special:'station',price:200};
+  board[81] = {type:'special',name:'Gare Polaire',    special:'station',price:200};
+
+  // ── Services/Utilités (16, 66) ──
+  board[16] = {type:'special',name:'Puits Magique',   special:'utility',price:150};
+  board[66] = {type:'special',name:'Centrale Énergie',special:'utility',price:150};
+
+  // ── Cases spéciales réparties ──
+  board[2]  = {type:'special',name:'Caisse Forêt',special:'chest'};
+  board[17] = {type:'special',name:'Caisse Forêt',special:'chest'};
+  board[33] = {type:'special',name:'Caisse Forêt',special:'chest'};
+  board[58] = {type:'special',name:'Caisse Forêt',special:'chest'};
+  board[72] = {type:'special',name:'Caisse Forêt',special:'chest'};
+  board[89] = {type:'special',name:'Caisse Forêt',special:'chest'};
+
+  board[7]  = {type:'special',name:'Carte Destin',special:'chance'};
+  board[22] = {type:'special',name:'Carte Destin',special:'chance'};
+  board[44] = {type:'special',name:'Carte Destin',special:'chance'};
+  board[63] = {type:'special',name:'Carte Destin',special:'chance'};
+  board[84] = {type:'special',name:'Carte Destin',special:'chance'};
+  board[96] = {type:'special',name:'Carte Destin',special:'chance'};
+
+  board[4]  = {type:'special',name:'Taxe Lunaire',special:'tax200'};
+  board[38] = {type:'special',name:'Taxe Royale', special:'tax100'};
+  board[68] = {type:'special',name:'Taxe Lunaire',special:'tax200'};
+  board[91] = {type:'special',name:'Taxe Royale', special:'tax100'};
+
+  board[11] = {type:'special',name:'Nuit des Loups',special:'wolf_night'};
+  board[53] = {type:'special',name:'Nuit des Loups',special:'wolf_night'};
+  board[20] = {type:'special',name:'Gel des Loyers',special:'rent_freeze'};
+  board[78] = {type:'special',name:'Gel des Loyers',special:'rent_freeze'};
+  board[27] = {type:'special',name:'Miracle !',     special:'miracle'};
+  board[73] = {type:'special',name:'Miracle !',     special:'miracle'};
+  board[40] = {type:'special',name:'Festival',      special:'festival'};
+  board[90] = {type:'special',name:'Festival',      special:'festival'};
+  board[36] = {type:'special',name:'Séisme !',      special:'earthquake'};
+  board[86] = {type:'special',name:'Séisme !',      special:'earthquake'};
+  board[47] = {type:'special',name:'Arc-en-Ciel',   special:'rainbow'};
+  board[97] = {type:'special',name:'Arc-en-Ciel',   special:'rainbow'};
+  board[52] = {type:'special',name:'Pillage !',     special:'pillage'};
+  board[14] = {type:'special',name:'Repos',         special:'rest'};
+  board[64] = {type:'special',name:'Repos',         special:'rest'};
+  board[29] = {type:'special',name:'Météorite',     special:'meteor'};
+  board[79] = {type:'special',name:'Météorite',     special:'meteor'};
+  board[43] = {type:'special',name:'Paix',          special:'peace'};
+  board[93] = {type:'special',name:'Paix',          special:'peace'};
+  board[59] = {type:'special',name:'Bonus +100💰',  special:'bonus100'};
+  board[23] = {type:'special',name:'Bonus +50💰',   special:'bonus50'};
+  board[77] = {type:'special',name:'Loterie !',     special:'lottery'};
+  board[13] = {type:'special',name:'Double Tour !', special:'double_turn'};
+  board[99] = {type:'special',name:'Bonus +100💰',  special:'bonus100'};
+
+  // ── Propriétés groupées style Monopoly ──
+  // Côté BAS (cases 1→24) : Japon 1-3, Espace 5, France 8-10, Égypte 12, 15, 18→gare
+  // Thème Japon (violet foncé) : 2 props
+  board[1]  = prop('jp',0);
+  board[3]  = prop('jp',1);
+  // Thème Espace (indigo) : 3 props
+  board[5]  = prop('sp',0);
+  board[8]  = prop('sp',1);
+  board[9]  = prop('sp',2);
+  // Thème France (bleu) : 3 props
+  board[10] = prop('fr',0);
+  board[12] = prop('fr',1);
+  board[15] = prop('fr',2);
+  // Thème Égypte (orange) : 2 props
+  board[18] = prop('eg',0); // gare remplace, décalé
+  board[19] = prop('eg',1);
+  board[21] = prop('eg',2);
+  board[24] = prop('eg',3);
+
+  // Côté GAUCHE (cases 26→49)
+  // Thème Océan (cyan) : 3 props
+  board[26] = prop('oc',0);
+  board[28] = prop('oc',1);
+  board[30] = prop('oc',2);
+  // Thème Forêt Magique (vert) : 3 props
+  board[32] = prop('fm',0);
+  board[34] = prop('fm',1);
+  board[35] = prop('fm',2);
+  // Zone Mystère : 2 cases
+  board[37] = zoneMystere(0);
+  board[39] = zoneMystere(1);
+  // Thème Arctique (violet) : 3 props
+  board[41] = prop('ar',0);
+  board[42] = prop('ar',1);
+  board[45] = prop('ar',2);
+  // Thème Mexique (orange chaud) : 3 props
+  board[46] = prop('mx',0);
+  board[48] = prop('mx',1);
+  board[49] = prop('mx',2);
+
+  // Côté HAUT (cases 51→74)
+  // Thème Monde Robot (gris) : 3 props
+  board[51] = prop('rb',0);
+  board[54] = prop('rb',1);
+  board[55] = prop('rb',2);
+  // Thème Inde (or) : 3 props
+  board[57] = prop('in',0);
+  board[60] = prop('in',1);
+  board[61] = prop('in',2);
+  // Thème Amazonie (vert émeraude) : 3 props
+  board[62] = prop('am',0);
+  board[65] = prop('am',1);
+  board[67] = prop('am',2);
+  // Zone Mystère : 2 cases
+  board[69] = zoneMystere(2);
+  board[70] = zoneMystere(3);
+  // Thème Japon suite (retour) : props supplémentaires
+  board[71] = prop('jp',2);
+  board[74] = prop('jp',3);
+
+  // Côté DROIT (cases 76→99)
+  // Thème Espace suite
+  board[76] = prop('sp',3);
+  board[80] = prop('sp',4);
+  // Thème France suite
+  board[82] = prop('fr',3);
+  board[83] = prop('fr',4);
+  // Zone Mystère
+  board[85] = zoneMystere(4);
+  board[87] = prop('eg',4);
+  board[88] = prop('oc',3);
+  board[92] = prop('fm',3);
+  board[94] = prop('ar',3);
+  board[95] = prop('mx',3);
+  board[98] = prop('rb',1); // doublon intentionnel pour compléter
+
+  // Remplir les cases vides restantes
+  const dynFill=['rest','bonus50','lottery','double_turn','peace'];
+  let di=0;
+  for(let i=0;i<100;i++){
+    if(!board[i]) board[i]={type:'special',name:dynFill[di%dynFill.length],special:dynFill[di++%dynFill.length]};
   }
-  for(let i=0;i<100;i++){if(!board[i])board[i]={type:'special',name:'Repos',special:'rest'};}
   return board;
+}
+
+function prop(thId, pi){
+  const th=THEMES.find(t=>t.id===thId);
+  if(!th||th.isZM)return{type:'special',name:'Repos',special:'rest'};
+  const idx=Math.min(pi,th.props.length-1);
+  return{type:'prop',name:th.props[idx],theme:th.id,color:th.c,ti:th.i,
+    price:th.prices[idx],rent:th.rents[idx],group:th.id+'-g'};
+}
+function zoneMystere(pi){
+  const th=THEMES.find(t=>t.id==='zm');
+  if(!th)return{type:'special',name:'Repos',special:'rest'};
+  const idx=Math.min(pi,th.props.length-1);
+  return{type:'zone_mystere',name:th.props[idx],theme:th.id,color:th.c,ti:th.i,
+    price:0,rent:[0,0,0,0,0,0],group:th.id+'-g',zmMult:th.zmMult[idx]};
+}
+
+/* ═══════════════════════════════════════
+   DECK DE CARTES — Pioche avec suivi
+═══════════════════════════════════════ */
+function shuffleArray(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function initDecks(){
+  return {
+    chestDeck: shuffleArray(CHEST.map((c,i)=>({...c,id:i,used:false}))),
+    chanceDeck: shuffleArray(CHANCE.map((c,i)=>({...c,id:i,used:false}))),
+    chestIdx:0,
+    chanceIdx:0,
+  };
+}
+function drawChest(){
+  if(!G.chestDeck||G.chestDeck.length===0){G.chestDeck=shuffleArray(CHEST.map((c,i)=>({...c,id:i,used:false})));G.chestIdx=0;addLog('🔀 Caisse Forêt mélangée !');}
+  if(G.chestIdx>=G.chestDeck.length){G.chestDeck=shuffleArray(CHEST.map((c,i)=>({...c,id:i,used:false})));G.chestIdx=0;addLog('🔀 Caisse Forêt mélangée !');}
+  const card=G.chestDeck[G.chestIdx];
+  G.chestDeck[G.chestIdx]={...card,used:true};
+  G.chestIdx++;
+  return card;
+}
+function drawChance(){
+  if(!G.chanceDeck||G.chanceDeck.length===0){G.chanceDeck=shuffleArray(CHANCE.map((c,i)=>({...c,id:i,used:false})));G.chanceIdx=0;addLog('🔀 Destin mélangé !');}
+  if(G.chanceIdx>=G.chanceDeck.length){G.chanceDeck=shuffleArray(CHANCE.map((c,i)=>({...c,id:i,used:false})));G.chanceIdx=0;addLog('🔀 Destin mélangé !');}
+  const card=G.chanceDeck[G.chanceIdx];
+  G.chanceDeck[G.chanceIdx]={...card,used:true};
+  G.chanceIdx++;
+  return card;
 }
 
 /* ═══════════════════════════════════════
@@ -406,13 +1011,20 @@ async function initFirebase(){
   status.textContent='⏳ Connexion...';status.style.color='var(--text3)';
   try{
     if(!window.__firebase){
-      status.textContent='⏳ Chargement Firebase en cours, réessaie dans 2 secondes...';status.style.color='var(--gold)';
-      await new Promise(r=>window.addEventListener('firebase-ready',r,{once:true}));
+      status.textContent='⏳ Chargement Firebase en cours...';status.style.color='var(--gold)';
+      await new Promise((resolve, reject)=>{
+        const onReady=()=>{ cleanup(); resolve(); };
+        const onError=(e)=>{ cleanup(); reject(new Error(e.detail||'Chargement impossible')); };
+        const timeout=setTimeout(()=>{ cleanup(); reject(new Error('Timeout — ouvre le fichier depuis GitHub Pages, pas en double-cliquant dessus !')); }, 8000);
+        const cleanup=()=>{ window.removeEventListener('firebase-ready',onReady); window.removeEventListener('firebase-error',onError); clearTimeout(timeout); };
+        window.addEventListener('firebase-ready',onReady,{once:true});
+        window.addEventListener('firebase-error',onError,{once:true});
+      });
     }
     const {initializeApp,getApps,deleteApp,getDatabase,ref,set,get,update,onValue,remove}=window.__firebase;
     const apps=getApps();
     if(apps.length>0){try{await deleteApp(apps[0]);}catch(e){}}
-    const app=initializeApp({apiKey,authDomain:projectId+'.firebaseapp.com',databaseURL,projectId,storageBucket:projectId+'.appspot.com'});
+    const app=initializeApp({apiKey,authDomain:'monopolu-loups.firebaseapp.com',databaseURL,projectId,storageBucket:'monopolu-loups.firebasestorage.app'});
     db=getDatabase(app);
     fbRef=(path)=>ref(db,path);
     fbSet=(path,v)=>set(ref(db,path),v);
@@ -449,10 +1061,119 @@ function showNotice(msg){
   clearTimeout(n._t);
   n._t=setTimeout(()=>n.style.display='none',2600);
 }
+function switchMenuTab(name){
+  document.querySelectorAll('.menu-nav-tab').forEach(b=>{
+    const tabName=b.getAttribute('onclick')?.match(/switchMenuTab\('(\w+)'\)/)?.[1];
+    b.classList.toggle('on', tabName===name);
+  });
+  document.querySelectorAll('.menu-tab-pane').forEach(p=>p.classList.remove('on'));
+  const pane=document.getElementById('mtab-'+name);
+  if(pane)pane.classList.add('on');
+}
+
+/* ═══════════════════════════════════════
+   MOBILE — ZOOM & PANE NAVIGATION
+═══════════════════════════════════════ */
+let currentZoomMode='focus'; // 'focus' | 'mid' | 'full'
+
+function setZoomMode(mode){
+  currentZoomMode=mode;
+  ['focus','mid','full'].forEach(m=>{
+    const btn=document.getElementById('zbtn-'+m);
+    if(btn)btn.classList.toggle('active',m===mode);
+  });
+  applyZoom();
+}
+
+function applyZoom(){
+  if(!G||!BOARD)return;
+  const container=document.getElementById('board-container');
+  const scaler=document.getElementById('board-scaler');
+  const wrap=document.getElementById('board-wrap');
+  if(!container||!wrap||!scaler)return;
+
+  const vw=wrap.clientWidth||window.innerWidth;
+  const vh=wrap.clientHeight||(window.innerHeight*0.45);
+
+  const cW=44,cC=80;
+  const bs=cC+24*cW+cC; // ~1216px
+
+  let scale,scrollX,scrollY;
+
+  if(currentZoomMode==='full'){
+    scale=Math.min(vw/bs, vh/bs)*0.95;
+    const scaledSize=bs*scale;
+    scrollX=(scaledSize-vw)/2;
+    scrollY=(scaledSize-vh)/2;
+  } else if(currentZoomMode==='mid'){
+    scale=Math.min(vw/bs, vh/bs)*1.6;
+    const cur=curPlayer();
+    if(cur){
+      const {x,y}=cellPosForZoom(cur.position,bs,cW,cC);
+      scrollX=(x+22)*scale-vw/2;
+      scrollY=(y+32)*scale-vh/2;
+    } else {
+      scrollX=(bs*scale-vw)/2;scrollY=(bs*scale-vh)/2;
+    }
+  } else {
+    // focus
+    scale=Math.min(vw/bs,vh/bs)*2.8;
+    scale=Math.min(scale,3.5);
+    const cur=curPlayer();
+    if(cur){
+      const {x,y}=cellPosForZoom(cur.position,bs,cW,cC);
+      scrollX=(x+22)*scale-vw/2;
+      scrollY=(y+32)*scale-vh/2;
+    } else {
+      scrollX=(bs*scale-vw)/2;scrollY=(bs*scale-vh)/2;
+    }
+  }
+
+  const scaledSize=Math.round(bs*scale);
+  // Set scaler to actual rendered pixel dimensions so scroll area is correct
+  scaler.style.width=scaledSize+'px';
+  scaler.style.height=scaledSize+'px';
+  // Scale the board-container inside via transform
+  container.style.transform='scale('+scale+')';
+  container.style.transformOrigin='top left';
+  container.style.width=bs+'px';
+  container.style.height=bs+'px';
+
+  setTimeout(()=>{
+    wrap.scrollLeft=Math.max(0,Math.round(scrollX));
+    wrap.scrollTop=Math.max(0,Math.round(scrollY));
+  },40);
+}
+
+function cellPosForZoom(i,bs,cW,cC){
+  if(i===0) return{x:bs-cC,y:bs-cC};
+  if(i===25) return{x:0,y:bs-cC};
+  if(i===50) return{x:0,y:0};
+  if(i===75) return{x:bs-cC,y:0};
+  if(i>=1&&i<=24){const n=25-i;return{x:cC+(n-1)*cW,y:bs-64};}
+  if(i>=26&&i<=49){const n=i-25;return{x:0,y:bs-cC-n*cW};}
+  if(i>=51&&i<=74){const n=i-50;return{x:cC+(n-1)*cW,y:0};}
+  if(i>=76&&i<=99){const n=i-75;return{x:bs-64,y:cC+(n-1)*cW};}
+  return{x:bs/2,y:bs/2};
+}
+
+function switchPane(pane, btn){
+  document.querySelectorAll('.gpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('pane-'+pane);
+  if(el)el.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+  document.getElementById('game-screen').style.display='none';
   const s=document.getElementById(name+'-screen');
-  if(s)s.style.display='flex';
+  if(name==='game'){
+    document.getElementById('game-screen').style.display='flex';
+  } else if(s){
+    s.style.display='flex';
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -595,6 +1316,7 @@ async function startGame(){
     currentPlayer:0,log:[],
     doubleRentTurns:0,rentFreezeTurns:0,
     diceResult:null,pendingAction:null,turn:0,extraTurn:false,round:0,
+    ...initDecks(),
   };
   G.players.forEach(p=>{
     if(p.roleEffect==='roi_dechu'){p.money+=400;addLog('👑 '+p.animal+' Roi Déchu : +400💰 bonus départ !');}
@@ -634,6 +1356,8 @@ function serializeGame(g){
     diceResult:g.diceResult||null,
     pendingAction:g.pendingAction||null,
     turn:g.turn||0,extraTurn:!!g.extraTurn,round:g.round||0,
+    chestDeck:g.chestDeck||null,chanceDeck:g.chanceDeck||null,
+    chestIdx:g.chestIdx||0,chanceIdx:g.chanceIdx||0,
   };
 }
 function deserializeGame(s){
@@ -657,6 +1381,8 @@ function deserializeGame(s){
       log:s.log||[],
       diceResult:s.diceResult||null,
       pendingAction:s.pendingAction||null,
+      chestDeck:s.chestDeck||null,chanceDeck:s.chanceDeck||null,
+      chestIdx:s.chestIdx||0,chanceIdx:s.chanceIdx||0,
     };
   }catch(e){console.error('deserializeGame error',e);return null;}
 }
@@ -830,7 +1556,7 @@ function landOn(cur,pos,diceTotal){
       }
     }
     else if(s==='chest'){
-      const c=CHEST[Math.floor(Math.random()*CHEST.length)];
+      const c=drawChest();
       let amt=c.amt;
       if(cur.animal==='🐮')amt+=30;
       if(isDruide)amt=Math.max(0,amt)+80;
@@ -840,7 +1566,7 @@ function landOn(cur,pos,diceTotal){
       G.pendingAction={type:'card',text:c.t,special:'chest'};
     }
     else if(s==='chance'){
-      const c=CHANCE[Math.floor(Math.random()*CHANCE.length)];
+      const c=drawChance();
       applyChance(cur,c,diceTotal);
       if(isDruide){cur.money+=80;addLog('🌿 Druide bonus +80💰');}
       addLog(cur.animal+' 🎴 Destin : '+c.t);
@@ -1087,8 +1813,14 @@ function renderGame(){
   const turnEl=document.getElementById('g-hturn');
   if(turnEl)turnEl.textContent=isMyTurn()
     ?('🎮 TON TOUR — Case '+(cur?.position??0)+' | Tour '+G.turn)
-    :('⏳ Tour de '+(cur?.animal||'')+' '+(cur?.name||'')+' — Case '+(cur?.position??0));
+    :('⏳ '+(cur?.animal||'')+' '+(cur?.name||'')+' joue...');
+  // Update position hint
+  const myP=G.players.find(p=>p.id===myPlayerId);
+  const posHint=document.getElementById('my-pos-hint');
+  if(posHint&&myP)posHint.textContent='📍 '+myP.animal+' Case '+myP.position+(myP.inJail?' 🔒':'');
   renderBoard();renderPlayers();renderAction();renderLog();
+  // Auto zoom to follow current player
+  setTimeout(()=>applyZoom(),80);
 }
 
 function renderBoard(){
@@ -1158,26 +1890,29 @@ function renderBoard(){
   html+='<div style="position:absolute;left:'+cC+'px;top:'+cC+'px;width:'+(bs-2*cC)+'px;height:'+(bs-2*cC)+'px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:radial-gradient(ellipse at center,#0f1120,#080a10);overflow:hidden"><div style="font-family:\'Cinzel Decorative\',cursive;font-size:.85rem;color:#ffd700;text-align:center;line-height:1.4;text-shadow:0 0 20px rgba(255,215,0,.4)">🐺<br>Monopoly<br><span style="font-size:.65rem;color:#a29bfe">des Loups</span></div><div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,#2a3050,transparent)"></div><div style="width:100%;padding:0 6px;display:flex;flex-direction:column;gap:1px">'+scoreRows+'</div><div style="font-size:.6rem;color:#4a5080;text-align:center">🌐 '+(roomCode||'')+' · Tour '+G.turn+'</div></div>';
   html+='</div>';
   container.innerHTML=html;
-  const wrap=document.getElementById('board-wrap');
-  if(wrap&&!wrap._centered){wrap._centered=true;setTimeout(()=>{wrap.scrollLeft=(wrap.scrollWidth-wrap.clientWidth)/2;wrap.scrollTop=(wrap.scrollHeight-wrap.clientHeight)/2;},60);}
+  // Zoom is applied by renderGame → applyZoom()
 }
 
 function renderPlayers(){
   const panel=document.getElementById('players-panel');
   if(!panel||!G)return;
-  panel.innerHTML=G.players.map((p,i)=>`<div class="pc ${i===G.currentPlayer?'on':''} ${p.bankrupt?'out':''}"><div class="pc-top"><div class="pc-emo">${p.animal}</div><div style="min-width:0"><div class="pc-name">${p.name}${p.id===myPlayerId?' 👤':''}</div>${p.roleName?'<div class="pc-role" style="color:'+(p.roleColor||'#888')+';background:'+(p.roleColor||'#888')+'18">'+p.roleIcon+' '+p.roleName+'</div>':''}</div></div><div class="pc-money">${(p.money||0).toLocaleString()}💰</div><div class="pc-info">Case ${p.position}${p.inJail?' 🔒':''}${p.skipTurn?' ⏭':''}${p.allianceWith>=0?' 🤝':''}</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${(p.properties||[]).map(pi=>{const c=BOARD?.[pi];return c?'<div style="width:7px;height:7px;border-radius:2px;background:'+(c.color||'#888')+'" title="'+c.name+'"></div>':''}).join('')}</div></div>`).join('');
+  panel.innerHTML=G.players.map((p,i)=>`<div class="pc ${i===G.currentPlayer?'on':''} ${p.bankrupt?'out':''}"><div class="pc-top"><div class="pc-emo">${p.animal}</div><div style="min-width:0"><div class="pc-name">${p.name}${p.id===myPlayerId?' 👤':''}</div>${p.roleName?'<div class="pc-role" style="color:'+(p.roleColor||'#888')+';background:'+(p.roleColor||'#888')+'18">'+p.roleIcon+' '+p.roleName+'</div>':''}</div></div><div class="pc-money">${(p.money||0).toLocaleString()}💰</div><div class="pc-info">Case ${p.position}${p.inJail?' 🔒':''}${p.skipTurn?' ⏭':''}${p.allianceWith>=0?' 🤝':''}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${(p.properties||[]).map(pi=>{const c=BOARD?.[pi];return c?'<div style="width:8px;height:8px;border-radius:2px;background:'+(c.color||'#888')+'" title="'+c.name+'"></div>':''}).join('')}</div></div>`).join('');
 }
 
 function renderAction(){
   const bar=document.getElementById('action-bar');
   if(!bar||!G)return;
   const cur=curPlayer();
-  if(!cur||cur.bankrupt){bar.innerHTML='<div style="text-align:center;color:var(--text3);padding:12px">En attente...</div>';return;}
+  if(!cur||cur.bankrupt){bar.innerHTML='<div class="waiting-card" style="margin:4px 0"><span style="font-size:1.5rem">⏳</span><div style="font-size:.82rem;font-weight:700;color:var(--text2);margin-top:4px">En attente...</div></div>';return;}
   const mine=isMyTurn();
   if(!mine){
-    bar.innerHTML=`<div style="text-align:center;padding:16px;background:rgba(162,155,254,.06);border-radius:12px;border:1px solid rgba(162,155,254,.15)"><div style="font-size:1.8rem">${cur.animal}</div><div style="font-size:.9rem;font-weight:800;color:var(--purple)">Tour de ${cur.name}</div><div style="font-size:.75rem;color:var(--text3);margin-top:4px">En attente de son action...</div>${G.diceResult?'<div style="margin-top:8px;font-size:.85rem;font-weight:800;background:var(--bg3);border-radius:8px;padding:8px">🎲 '+G.diceResult[0]+' + '+G.diceResult[1]+' = '+(G.diceResult[0]+G.diceResult[1])+'</div>':''}</div>`;
+    bar.innerHTML=`<div class="waiting-card"><div style="font-size:2rem">${cur.animal}</div><div style="font-size:.9rem;font-weight:800;color:var(--purple);margin-top:6px">Tour de ${cur.name}</div><div style="font-size:.75rem;color:var(--text3);margin-top:4px">En attente de son action...</div>${G.diceResult?'<div style="margin-top:8px;font-size:.88rem;font-weight:800;background:var(--bg3);border-radius:10px;padding:8px;display:inline-block">🎲 '+G.diceResult[0]+' + '+G.diceResult[1]+' = '+(G.diceResult[0]+G.diceResult[1])+'</div>':''}</div>`;
     return;
   }
+  // Switch to action pane when it's my turn
+  const actionPaneBtn=document.querySelector('[data-pane="action"]');
+  if(actionPaneBtn)switchPane('action',actionPaneBtn);
+
   let html=`<div class="ab-top"><div class="ab-emo">${cur.animal}</div><div class="ab-info"><h3>${cur.name}${cur.roleName?' <span style="color:'+(cur.roleColor||'')+'">'+(cur.roleIcon||'')+'</span>':''}</h3><p>${cur.inJail?'🔒 Tu es en prison !':(G.doubleRentTurns>0?'🌑 Loyers ×2 encore '+G.doubleRentTurns+' tour(s)':"🎮 C'est ton tour !")}</p></div></div>`;
   const pa=G.pendingAction;
   if(pa){
@@ -1209,7 +1944,7 @@ function renderAction(){
     if(cur.inJail){
       html+=`<button class="gbtn btn-roll" id="act-roll" ${G.diceResult?'disabled':''}>🎲 Lancer pour sortir</button><button class="gbtn btn-jail" id="act-pay-jail">💰 Payer 50💰</button>`;
     } else {
-      html+=`<button class="gbtn btn-roll" id="act-roll" ${G.diceResult?'disabled':''}>🎲 Lancer les dés</button><button class="gbtn btn-build" id="act-build">🏠 Construire</button><button class="gbtn btn-nego" id="act-nego">🤝 Négo</button>`;
+      html+=`<button class="gbtn btn-roll" id="act-roll" ${G.diceResult?'disabled':''}>🎲 Lancer les dés</button><button class="gbtn btn-build" id="act-build">🏠 Construire</button><button class="gbtn btn-nego" id="act-nego">🤝</button>`;
     }
     html+='</div>';
     if(cur.sabCards&&cur.sabCards.length>0){
@@ -1218,7 +1953,7 @@ function renderAction(){
       html+='</div>';
     }
     if(G.diceResult){
-      html+=`<div style="margin-top:6px"><button class="gbtn btn-pass" id="act-end">Fin du tour →</button></div>`;
+      html+=`<div style="margin-top:8px"><button class="gbtn btn-pass" id="act-end">Fin du tour →</button></div>`;
     }
   }
   bar.innerHTML=html;
@@ -1236,7 +1971,7 @@ function renderLog(){
   const el=document.getElementById('log-list');
   if(!el||!G)return;
   el.innerHTML=[...(G.log||[])].reverse().map((l,i)=>'<div class="log-entry '+(i===0?'new':'')+'">'+l+'</div>').join('');
-  const sc=el.parentElement;if(sc)sc.scrollTop=0;
+  el.scrollTop=0;
 }
 
 /* ═══════════════════════════════════════
@@ -1338,6 +2073,11 @@ function goMenu(){
 /* ═══════════════════════════════════════
    INIT BUTTONS
 ═══════════════════════════════════════ */
+/* ── Expose module-scoped functions to window for inline onclick="" handlers ── */
+window.switchMenuTab = switchMenuTab;
+window.setZoomMode   = setZoomMode;
+window.switchPane    = switchPane;
+
 document.getElementById('btn-connect-firebase').addEventListener('click',initFirebase);
 document.getElementById('btn-create-room').addEventListener('click',createRoom);
 document.getElementById('btn-join-room').addEventListener('click',joinRoom);
@@ -1345,7 +2085,51 @@ document.getElementById('btn-toggle-ready').addEventListener('click',toggleReady
 document.getElementById('btn-start-game').addEventListener('click',startGame);
 document.getElementById('btn-lobby-back').addEventListener('click',goMenu);
 document.getElementById('btn-new-game').addEventListener('click',goMenu);
+document.getElementById('btn-cards-top').addEventListener('click',openCardsModal);
 document.getElementById('btn-nego-top').addEventListener('click',openNegoModal);
+
+function openCardsModal(){
+  if(!G)return;
+  const usedChestIds=new Set((G.chestDeck||[]).filter(c=>c.used).map(c=>c.id));
+  const usedChanceIds=new Set((G.chanceDeck||[]).filter(c=>c.used).map(c=>c.id));
+  const chestUsed=usedChestIds.size, chestTotal=CHEST.length;
+  const chanceUsed=usedChanceIds.size, chanceTotal=CHANCE.length;
+  const chestLeft=chestTotal-chestUsed, chanceLeft=chanceTotal-chanceUsed;
+  const pct=(n,t)=>Math.round(n/t*100);
+
+  let extra=`
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="background:rgba(46,213,115,.07);border:1px solid rgba(46,213,115,.25);border-radius:14px;padding:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:1.4rem">🌲</span>
+        <div>
+          <div style="font-size:.8rem;font-weight:900;color:#2ed573">Caisse Forêt</div>
+          <div style="font-size:.7rem;color:var(--text3)">${chestLeft} / ${chestTotal} cartes restantes dans la pioche</div>
+        </div>
+        <div style="margin-left:auto;background:rgba(46,213,115,.15);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:900;color:#2ed573">${pct(chestLeft,chestTotal)}%</div>
+      </div>
+      <div style="height:6px;background:var(--bg4);border-radius:3px;margin-bottom:10px"><div style="height:100%;width:${pct(chestLeft,chestTotal)}%;background:linear-gradient(90deg,#2ed573,#00b894);border-radius:3px;transition:.3s"></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto">
+        ${CHEST.map((c,i)=>{const used=usedChestIds.has(i);return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;background:${used?'rgba(255,255,255,.03)':'rgba(46,213,115,.06)'};opacity:${used?.4:1}"><span style="font-size:1rem">${used?'✓':'🌲'}</span><span style="font-size:.75rem;font-weight:${used?600:700};color:${used?'var(--text3)':'var(--text)'};${used?'text-decoration:line-through':''}">${c.t}</span></div>`;}).join('')}
+      </div>
+    </div>
+    <div style="background:rgba(162,155,254,.07);border:1px solid rgba(162,155,254,.25);border-radius:14px;padding:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:1.4rem">🎴</span>
+        <div>
+          <div style="font-size:.8rem;font-weight:900;color:var(--purple)">Cartes Destin</div>
+          <div style="font-size:.7rem;color:var(--text3)">${chanceLeft} / ${chanceTotal} cartes restantes dans la pioche</div>
+        </div>
+        <div style="margin-left:auto;background:rgba(162,155,254,.15);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:900;color:var(--purple)">${pct(chanceLeft,chanceTotal)}%</div>
+      </div>
+      <div style="height:6px;background:var(--bg4);border-radius:3px;margin-bottom:10px"><div style="height:100%;width:${pct(chanceLeft,chanceTotal)}%;background:linear-gradient(90deg,var(--purple),#6d28d9);border-radius:3px;transition:.3s"></div></div>
+      <div style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto">
+        ${CHANCE.map((c,i)=>{const used=usedChanceIds.has(i);return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;background:${used?'rgba(255,255,255,.03)':'rgba(162,155,254,.06)'};opacity:${used?.4:1}"><span style="font-size:1rem">${used?'✓':'🎴'}</span><span style="font-size:.75rem;font-weight:${used?600:700};color:${used?'var(--text3)':'var(--text)'};${used?'text-decoration:line-through':''}">${c.t}</span></div>`;}).join('')}
+      </div>
+    </div>
+  </div>`;
+  showModal('🃏 Cartes en jeu','',[],'mbtn-o','Fermer',closeModal,extra);
+}
 document.getElementById('btn-quit-game').addEventListener('click',()=>{if(confirm('Quitter la partie ? Ta progression sera perdue.'))goMenu();});
 document.getElementById('btn-copy-code').addEventListener('click',()=>{
   navigator.clipboard.writeText(document.getElementById('lobby-code').textContent).then(()=>showNotice('✅ Code copié dans le presse-papier !'));

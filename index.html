@@ -24,7 +24,81 @@
   --font:'Nunito',sans-serif;--font2:'Cinzel Decorative',cursive;
   --nav-h:64px;--topbar-h:52px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* Night system */
+  --night-overlay:transparent;
+  --night-tint:0;
 }
+/* Nuit normale */
+body.night-mode{
+  --bg:#06080e;--bg2:#0a0d16;--bg3:#10141e;--bg4:#141824;
+  --border:#1e2540;--border2:#252d48;
+}
+body.night-mode::after{
+  content:'';position:fixed;inset:0;
+  background:rgba(5,8,25,0.35);
+  pointer-events:none;z-index:0;
+  transition:background 2s ease;
+}
+/* Nuit des Loups */
+body.wolf-night::after{
+  content:'';position:fixed;inset:0;
+  background:rgba(60,0,80,0.45);
+  pointer-events:none;z-index:0;
+  animation:wolfPulse 3s ease-in-out infinite;
+}
+@keyframes wolfPulse{0%,100%{opacity:.8}50%{opacity:1}}
+/* Wolf night banner */
+#wolf-night-banner{
+  display:none;position:fixed;top:calc(var(--topbar-h) + 8px);left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,rgba(80,0,100,.95),rgba(20,0,40,.95));
+  border:1px solid #8b5cf6;border-radius:14px;padding:8px 20px;
+  font-size:.78rem;font-weight:800;color:#c4b5fd;
+  z-index:501;white-space:nowrap;
+  box-shadow:0 4px 24px rgba(100,0,150,.5);
+  animation:wolfBannerIn .4s ease;
+}
+@keyframes wolfBannerIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+body.wolf-night #wolf-night-banner{display:block;}
+/* Night/Day indicator */
+#night-indicator{
+  padding:4px 10px;border-radius:8px;font-size:.68rem;font-weight:800;
+  background:rgba(30,35,60,.8);border:1px solid var(--border2);
+  color:var(--text2);cursor:default;white-space:nowrap;flex-shrink:0;
+}
+
+/* ── Chat panel (mobile, dans pane-log) ── */
+#chat-panel{
+  background:var(--bg2);
+  flex-shrink:0;display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:max-height .3s ease;
+  max-height:260px;
+}
+#chat-panel.chat-collapsed{max-height:38px;}
+#chat-panel.chat-hidden{display:none!important;}
+
+/* Desktop chat on right panel */
+#desktop-chat{
+  border-top:2px solid var(--border2);
+  flex-shrink:0;display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:max-height .3s ease;
+  max-height:240px;
+}
+#desktop-chat.chat-collapsed{max-height:38px;}
+#desktop-chat.chat-hidden{display:none!important;}
+
+/* Improved modal close button */
+.modal-close-btn{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border:1px solid var(--border2);
+  border-radius:8px;background:var(--bg3);
+  color:var(--text2);font-size:1rem;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.15s;z-index:1;
+}
+.modal-close-btn:hover{background:var(--border);color:var(--text);}
+.modal{position:relative;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;}
@@ -311,6 +385,109 @@ select.inp{cursor:pointer;}
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ══════════════════════════════════════
+   DESKTOP LAYOUT (≥900px) — 3 colonnes
+══════════════════════════════════════ */
+@media(min-width:900px){
+  /* Game screen passe en grille 3 colonnes */
+  #game-screen{
+    flex-direction:column;
+  }
+  /* Zone sous la topbar : 3 colonnes */
+  #desktop-body{
+    display:flex;
+    flex:1;
+    overflow:hidden;
+    min-height:0;
+  }
+  /* Colonne gauche — joueurs */
+  #desktop-left{
+    width:240px;
+    flex-shrink:0;
+    background:var(--bg2);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #desktop-left-header{
+    padding:10px 12px 8px;
+    font-size:.65rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  #desktop-left-scroll{
+    flex:1;overflow-y:auto;padding:8px;
+  }
+  /* Colonne centre — plateau */
+  #desktop-center{
+    flex:1;
+    position:relative;
+    overflow:hidden;
+    background:#080a10;
+    display:flex;
+    flex-direction:column;
+  }
+  /* Colonne droite — action + journal */
+  #desktop-right{
+    width:280px;
+    flex-shrink:0;
+    background:var(--bg2);
+    border-left:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #desktop-right-tabs{
+    display:flex;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .drtab{
+    flex:1;padding:9px 4px;
+    background:none;border:none;
+    color:var(--text3);font-family:var(--font);font-size:.7rem;font-weight:800;
+    text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:.15s;
+    border-bottom:2px solid transparent;
+  }
+  .drtab.active{color:var(--purple);border-bottom-color:var(--purple);}
+  #desktop-right-content{
+    flex:1;overflow-y:auto;overscroll-behavior:contain;
+  }
+  /* Cacher les éléments mobile dans le game screen */
+  #board-area{flex:1;position:relative;overflow:hidden;background:#080a10;}
+  #bottom-panel,#bottom-nav{display:none!important;}
+  /* Montrer le layout desktop */
+  #desktop-body{display:flex;}
+  /* Board area dans le centre */
+  #desktop-center #board-area{flex:1;}
+  /* Panes desktop */
+  .dpane{display:none;padding:10px;}
+  .dpane.active{display:block;}
+  /* Notice position desktop */
+  #notice{top:calc(var(--topbar-h) + 70px);}
+  /* Desktop chat */
+  #desktop-chat{
+    border-top:2px solid var(--border2);
+    flex-shrink:0;display:flex;flex-direction:column;
+    transition:max-height .3s ease;
+  }
+  #desktop-chat.hidden{display:none!important;}
+  #desktop-chat #chat-header{cursor:pointer;background:var(--bg3);}
+  #chat-messages-desktop{flex:1;overflow-y:auto;padding:6px 10px;max-height:110px;display:flex;flex-direction:column;gap:4px;}
+  #chat-input-row-desktop{display:flex;gap:6px;padding:6px 10px;border-top:1px solid var(--border);}
+  .chat-msg{font-size:.72rem;line-height:1.4;padding:4px 8px;border-radius:6px;background:rgba(162,155,254,.06);}
+  .chat-msg .chat-sender{font-weight:800;color:var(--purple);margin-right:6px;}
+  .chat-msg.mine{background:rgba(162,155,254,.14);}
+}
+@media(max-width:899px){
+  /* Cacher le layout desktop sur mobile */
+  #desktop-body{display:contents;}
+  #desktop-left,#desktop-right,#desktop-left-header,#desktop-left-scroll,#desktop-right-tabs,#desktop-right-content{display:none!important;}
+  /* Sur mobile, desktop-center avec display:contents expose ses enfants */
+  #desktop-center{display:contents;}
+}
 </style>
 <!-- Firebase SDK — chargement fiable via esm.sh -->
 <script type="module">
@@ -340,8 +517,10 @@ select.inp{cursor:pointer;}
 <body>
 
 <div id="notice"><span id="notice-text"></span></div>
+<div id="wolf-night-banner">🌕 NUIT DES LOUPS — Loyers ×2 | Loup-Garou ×1.5 | Sabotages gratuits !</div>
 <div id="overlay" class="h">
   <div class="modal">
+    <button class="modal-close-btn" onclick="closeModal()" title="Fermer">✕</button>
     <h2 id="m-title"></h2>
     <p id="m-body"></p>
     <div id="m-extra"></div>
@@ -603,6 +782,23 @@ select.inp{cursor:pointer;}
       </div>
 
     </div><!-- fin tab-regles -->
+
+      <!-- Nuit des Loups -->
+      <div style="background:var(--bg2);border:2px solid rgba(139,92,246,.5);border-radius:16px;overflow:hidden;margin-bottom:16px;">
+        <div style="background:linear-gradient(135deg,rgba(80,0,100,.4),rgba(20,0,40,.3));border-bottom:1px solid rgba(139,92,246,.4);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🌕</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:#c4b5fd;font-weight:900;letter-spacing:.5px">NUIT DES LOUPS</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px;line-height:1.6">Déclenchée par la case 🌑 Nuit ou la carte Nuit Sombre. Dure <strong style="color:#c4b5fd">3 tours</strong>. Le ciel devient violet !</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <div style="display:flex;align-items:center;gap:10px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">💰</span><div><span style="font-size:.82rem;font-weight:800;color:#c4b5fd">Tous les loyers ×2</span><span style="font-size:.72rem;color:var(--text3);margin-left:7px">pour tout le monde.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🌕</span><div><span style="font-size:.82rem;font-weight:800;color:#ffd700">Loup-Garou ×1.5 bonus</span><span style="font-size:.72rem;color:var(--text3);margin-left:7px">ses loyers sont multipliés par 1.5 en plus !</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:rgba(162,155,254,.07);border:1px solid rgba(162,155,254,.2);border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">+150💰</span><div><span style="font-size:.82rem;font-weight:800;color:#a29bfe">Bonus déclencheur</span><span style="font-size:.72rem;color:var(--text3);margin-left:7px">+150💰 pour l'animal Loup-Garou qui atterrit dessus.</span></div></div>
+            <div style="display:flex;align-items:center;gap:10px;background:rgba(46,213,115,.06);border:1px solid rgba(46,213,115,.15);border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🌑</span><div><span style="font-size:.82rem;font-weight:800;color:#2ed573">Fin automatique</span><span style="font-size:.72rem;color:var(--text3);margin-left:7px">La nuit se termine après les tours décrits. Le ciel redevient normal.</span></div></div>
+          </div>
+        </div>
+      </div>
   </div><!-- fin menu-main -->
 </div>
 
@@ -610,7 +806,7 @@ select.inp{cursor:pointer;}
 <div id="lobby-screen" class="screen">
   <div style="width:100%;max-width:560px;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-      <button class="tb-btn" id="btn-lobby-back">← Retour</button>
+      <button class="tb-btn" id="btn-lobby-back" style="background:rgba(255,71,87,.15);border-color:var(--accent);color:var(--accent);font-weight:900">✕ Quitter le salon</button>
       <div style="font-family:var(--font2);font-size:1rem;color:var(--gold)" id="lobby-title">🎮 Salon</div>
     </div>
     <div class="lobby-code-box">
@@ -633,35 +829,83 @@ select.inp{cursor:pointer;}
 
 <!-- GAME -->
 <div id="game-screen" class="screen">
-  <!-- Top bar -->
+  <!-- Top bar (shared mobile + desktop) -->
   <div class="g-topbar">
     <div id="g-hturn">Monopoly des Loups</div>
     <div class="online-badge" style="font-size:.62rem;padding:3px 8px"><span class="online-dot"></span><span id="room-code-badge"></span></div>
+    <div id="night-indicator">☀️ Jour</div>
     <button class="tb-btn" id="btn-nego-top" title="Négociation">🤝</button>
     <button class="tb-btn" id="btn-cards-top" title="Cartes">🃏</button>
-    <button class="tb-btn" id="btn-quit-game" title="Quitter">✕</button>
+    <button class="tb-btn" style="background:rgba(255,71,87,.15);border-color:var(--accent);color:var(--accent);font-weight:900" id="btn-quit-game" title="Quitter">✕ Quitter</button>
   </div>
 
-  <!-- Board area -->
-  <div id="board-area">
-    <div id="board-wrap"><div id="board-scaler"><div id="board-container"></div></div></div>
+  <!-- ══ DESKTOP BODY (3 colonnes) ══ -->
+  <div id="desktop-body">
 
-    <!-- Zoom controls -->
-    <div id="zoom-bar">
-      <button class="zoom-btn active" id="zbtn-focus" title="Vue joueur" onclick="setZoomMode('focus')">🎯</button>
-      <button class="zoom-btn" id="zbtn-mid" title="Vue équilibrée" onclick="setZoomMode('mid')">⚖️</button>
-      <button class="zoom-btn" id="zbtn-full" title="Plateau entier" onclick="setZoomMode('full')">🗺️</button>
+    <!-- Colonne gauche : joueurs -->
+    <div id="desktop-left">
+      <div id="desktop-left-header">👥 Joueurs</div>
+      <div id="desktop-left-scroll">
+        <!-- rempli par renderPlayers() -->
+        <div id="players-panel-desktop"></div>
+      </div>
     </div>
 
-    <!-- Current position hint -->
-    <div id="my-pos-hint">📍 Case 0</div>
-  </div>
+    <!-- Colonne centre : plateau -->
+    <div id="desktop-center">
+      <!-- Board area -->
+      <div id="board-area">
+        <div id="board-wrap"><div id="board-scaler"><div id="board-container"></div></div></div>
 
-  <!-- Bottom panel: action + tabs -->
+        <!-- Zoom controls -->
+        <div id="zoom-bar">
+          <button class="zoom-btn active" id="zbtn-focus" title="Vue joueur" onclick="setZoomMode('focus')">🎯</button>
+          <button class="zoom-btn" id="zbtn-mid" title="Vue équilibrée" onclick="setZoomMode('mid')">⚖️</button>
+          <button class="zoom-btn" id="zbtn-full" title="Plateau entier" onclick="setZoomMode('full')">🗺️</button>
+        </div>
+
+        <!-- Current position hint -->
+        <div id="my-pos-hint">📍 Case 0</div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : action + journal -->
+    <div id="desktop-right">
+      <div id="desktop-right-tabs">
+        <button class="drtab active" onclick="switchDesktopTab('action',this)">🎮 Action</button>
+        <button class="drtab" onclick="switchDesktopTab('log',this)">📋 Journal</button>
+      </div>
+      <div id="desktop-right-content">
+        <div id="dpane-action" class="dpane active">
+          <div id="action-bar-desktop"></div>
+        </div>
+        <div id="dpane-log" class="dpane">
+          <div id="log-list-desktop"></div>
+        </div>
+      </div>
+      <!-- Desktop Chat -->
+      <div id="desktop-chat">
+        <div onclick="toggleChat('desktop')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-top:2px solid var(--border2);border-bottom:1px solid var(--border);cursor:pointer;flex-shrink:0;">
+          <span style="font-size:.9rem">💬</span>
+          <span style="font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text3);flex:1">Chat</span>
+          <button class="chat-arrow" onclick="event.stopPropagation();toggleChat('desktop')" style="width:22px;height:22px;border:none;border-radius:6px;background:var(--bg4);color:var(--text2);font-size:.7rem;cursor:pointer;">▼</button>
+          <button onclick="event.stopPropagation();hideChat('desktop')" title="Fermer" style="width:22px;height:22px;border:1px solid var(--accent);border-radius:6px;background:rgba(255,71,87,.15);color:var(--accent);font-size:.72rem;font-weight:900;cursor:pointer;line-height:1;">✕</button>
+        </div>
+        <div id="chat-messages-desktop" style="overflow-y:auto;padding:6px 10px;display:flex;flex-direction:column;gap:3px;max-height:120px;flex:1;min-height:60px;"></div>
+        <div style="display:flex;gap:6px;padding:6px 10px;border-top:1px solid var(--border);flex-shrink:0;">
+          <input id="chat-input-desktop" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:.78rem;font-family:var(--font);outline:none;" placeholder="Message..." maxlength="120" onkeydown="if(event.key==='Enter')sendChat('desktop')">
+          <button onclick="sendChat('desktop')" style="padding:6px 14px;background:linear-gradient(135deg,var(--purple),#6d28d9);border:none;border-radius:8px;color:#fff;font-size:.75rem;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">→</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- fin desktop-body -->
+
+  <!-- ══ MOBILE : plateau (caché en desktop via CSS) ══ -->
+  <!-- Sur mobile, board-area est sorti du desktop-body via display:contents -->
+  <!-- Bottom panel: action + tabs (mobile seulement) -->
   <div id="bottom-panel">
     <div id="panel-handle"></div>
-
-    <!-- Tab content -->
     <div id="pane-action" class="gpane active">
       <div id="action-bar"></div>
     </div>
@@ -670,10 +914,24 @@ select.inp{cursor:pointer;}
     </div>
     <div id="pane-log" class="gpane">
       <div id="log-list"></div>
+      <!-- Chat mobile en bas du journal -->
+      <div id="chat-panel">
+        <div onclick="toggleChat('mobile')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-top:2px solid var(--border2);border-bottom:1px solid var(--border);cursor:pointer;background:var(--bg3);flex-shrink:0;">
+          <span style="font-size:.9rem">💬</span>
+          <span style="font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--text3);flex:1">Chat</span>
+          <button class="chat-arrow" onclick="event.stopPropagation();toggleChat('mobile')" style="width:22px;height:22px;border:none;border-radius:6px;background:var(--bg4);color:var(--text2);font-size:.7rem;cursor:pointer;">▼</button>
+          <button onclick="event.stopPropagation();hideChat('mobile')" title="Fermer" style="width:22px;height:22px;border:1px solid var(--accent);border-radius:6px;background:rgba(255,71,87,.15);color:var(--accent);font-size:.72rem;font-weight:900;cursor:pointer;line-height:1;">✕</button>
+        </div>
+        <div id="chat-messages-mobile" style="overflow-y:auto;padding:6px 10px;display:flex;flex-direction:column;gap:3px;max-height:110px;flex:1;min-height:50px;"></div>
+        <div style="display:flex;gap:6px;padding:6px 10px;border-top:1px solid var(--border);flex-shrink:0;">
+          <input id="chat-input-mobile" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:.78rem;font-family:var(--font);outline:none;" placeholder="Message..." maxlength="120" onkeydown="if(event.key==='Enter')sendChat('mobile')">
+          <button onclick="sendChat('mobile')" style="padding:6px 14px;background:linear-gradient(135deg,var(--purple),#6d28d9);border:none;border-radius:8px;color:#fff;font-size:.75rem;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">→</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Bottom navigation -->
+  <!-- Bottom navigation (mobile seulement) -->
   <div id="bottom-nav">
     <button class="bnav-btn active" data-pane="action" onclick="switchPane('action',this)">
       <span class="bnav-icon">🎮</span>
@@ -787,6 +1045,8 @@ const SAB=[
   {id:'rent_freeze',icon:'🧊',text:'Gel Total',desc:'Loyers à 0 pendant 2 tours',target:false},
   {id:'curse',icon:'🪄',text:'Malédiction',desc:'−50% loyers 3 tours',target:true},
   {id:'bank_rob',icon:'🏴‍☠️',text:'Braquage',desc:'Vole 15% argent (max 300💰)',target:true},
+  {id:'vortex_send',icon:'🌀',text:'Vortex',desc:'Téléporte la cible au Départ',target:true},
+  {id:'steal_prop',icon:'💎',text:'Vol de Titre',desc:'Vole une propriété aléatoire',target:true},
 ];
 
 /* ═══════════════════════════════════════
@@ -1095,8 +1355,8 @@ function applyZoom(){
   const vw=wrap.clientWidth||window.innerWidth;
   const vh=wrap.clientHeight||(window.innerHeight*0.45);
 
-  const cW=44,cC=80;
-  const bs=cC+24*cW+cC; // ~1216px
+  const cW=34,cC=64;
+  const bs=cC+24*cW+cC; // ~944px compact
 
   let scale,scrollX,scrollY;
 
@@ -1161,6 +1421,14 @@ function switchPane(pane, btn){
   document.querySelectorAll('.gpane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
   const el=document.getElementById('pane-'+pane);
+  if(el)el.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+function switchDesktopTab(pane, btn){
+  document.querySelectorAll('.dpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.drtab').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('dpane-'+pane);
   if(el)el.classList.add('active');
   if(btn)btn.classList.add('active');
 }
@@ -1239,6 +1507,10 @@ function listenRoom(){
   unsubGame=fbOnValue(fbRef('rooms/'+roomCode),snap=>{
     const room=snap.val();
     if(!room)return;
+    // Chat sync
+    if(room.chatMessages&&Array.isArray(room.chatMessages)){
+      renderChat(room.chatMessages);
+    }
     if(room.status==='lobby'){
       renderLobby(room);
     } else if(room.status==='playing'){
@@ -1246,6 +1518,9 @@ function listenRoom(){
       const newG=deserializeGame(room.gameState);
       if(newG){
         G=newG;
+        // Sync wolf night
+        if(G.doubleRentTurns>0&&!wolfNightActive){wolfNightActive=true;wolfNightTurnsLeft=G.doubleRentTurns;updateNightMode();}
+        else if(G.doubleRentTurns<=0&&wolfNightActive){wolfNightActive=false;wolfNightTurnsLeft=0;document.body.classList.remove('wolf-night');updateNightMode();}
         if(document.getElementById('game-screen').style.display!=='flex'){showScreen('game');}
         renderGame();
       }
@@ -1312,6 +1587,7 @@ async function startGame(){
       papillonUsed:false,blockBuyTurns:0,
       sabCards:[],cursedRentTurns:0,
       allianceWith:-1,allianceTurn:0,
+      bankDeposit:0,bankLoan:0,
     })),
     currentPlayer:0,log:[],
     doubleRentTurns:0,rentFreezeTurns:0,
@@ -1348,6 +1624,7 @@ function serializeGame(g){
       sabCards:p.sabCards||[],cursedRentTurns:p.cursedRentTurns||0,
       allianceWith:p.allianceWith!=null?p.allianceWith:-1,
       allianceTurn:p.allianceTurn||0,
+      bankDeposit:p.bankDeposit||0,bankLoan:p.bankLoan||0,
     })),
     currentPlayer:g.currentPlayer||0,
     log:(g.log||[]).slice(-60),
@@ -1515,6 +1792,9 @@ function landOn(cur,pos,diceTotal){
       const hs=getHouses(owner,pos),ht=getHotel(owner,pos);
       let rent=(cell.rent||[0,0,0,0,0,0])[ht?5:Math.min(hs,4)];
       if(G.doubleRentTurns>0)rent*=2;
+      if(wolfNightActive){
+        if(owner.animal==='🌕')rent=Math.floor(rent*1.5);
+      }
       if(owner.animal==='🐉')rent=Math.floor(rent*1.1);
       if(cur.animal==='🦊')rent=Math.floor(rent*.9);
       const housesStr=ht?'🏨 Hôtel':(hs>0?'🏠'.repeat(Math.min(hs,4)):'sans maison');
@@ -1584,7 +1864,7 @@ function landOn(cur,pos,diceTotal){
     else if(s==='bonus100'){const b=isParieur?150:100+(isDruide?80:0);cur.money+=b;addLog(cur.animal+' 💰 +'+b+'💰');G.pendingAction={type:'end'};}
     else if(s==='bonus50'){const b=isParieur?75:50+(isDruide?80:0);cur.money+=b;addLog(cur.animal+' 🎁 +'+b+'💰');G.pendingAction={type:'end'};}
     else if(s==='lottery'){let w=Math.floor(Math.random()*201)+50;if(isParieur){const w2=Math.floor(Math.random()*201)+50;w=Math.floor(Math.max(w,w2)*1.5);}cur.money+=w;addLog(cur.animal+' 🎰 Loterie +'+w+'💰');G.pendingAction={type:'end'};}
-    else if(s==='wolf_night'){G.doubleRentTurns=2;if(cur.animal==='🌕'){cur.money+=150;addLog(cur.animal+' 🌕 Loup-Garou +150💰 Nuit !');}addLog('🌑 Nuit des Loups ! Loyers ×2 pendant 2 tours');G.pendingAction={type:'end'};}
+    else if(s==='wolf_night'){G.doubleRentTurns=3;if(cur.animal==='🌕'){cur.money+=150;addLog(cur.animal+' 🌕 Loup-Garou +150💰 Nuit !');}addLog('🌕 NUIT DES LOUPS ! Loyers ×2 pendant 3 tours, Loup-Garou ×1.5 !');activateWolfNight(3);G.pendingAction={type:'end'};}
     else if(s==='rent_freeze'){G.rentFreezeTurns=3;addLog('🧊 Gel des Loyers 3 tours !');G.pendingAction={type:'end'};}
     else if(s==='miracle'){cur.money+=300+(isDruide?80:0);addLog(cur.animal+' ✨ Miracle +'+( 300+(isDruide?80:0))+'💰');G.pendingAction={type:'end'};}
     else if(s==='festival'){G.players.forEach(p=>{if(!p.bankrupt)p.money+=50;});addLog('🎉 Festival +50💰 pour tous !');G.pendingAction={type:'end'};}
@@ -1670,9 +1950,37 @@ function endTurn(){
   const cur=curPlayer();if(!cur)return;
   cur.skipTurn=false;
   G.diceResult=null;G.pendingAction=null;
-  if(G.doubleRentTurns>0)G.doubleRentTurns--;
+  if(G.doubleRentTurns>0){G.doubleRentTurns--;if(G.doubleRentTurns===0&&wolfNightActive)decrementWolfNight();}
   if(G.rentFreezeTurns>0)G.rentFreezeTurns--;
   if(cur.blockBuyTurns>0)cur.blockBuyTurns--;
+  // Bank interest every 5 turns per player
+  if(G.turn>0&&G.turn%5===0){
+    G.players.forEach(p=>{
+      if(!p.bankrupt&&p.bankDeposit&&p.bankDeposit>0){
+        const interest=Math.floor(p.bankDeposit*0.10);
+        p.bankDeposit+=interest;
+        addLog('💹 '+p.animal+' intérêts banque +'+interest+'💰 (dépôt → '+p.bankDeposit+'💰)');
+      }
+    });
+  }
+  // Inquisiteur: collect 100💰 per round from rich players
+  G.players.forEach(p=>{
+    if(!p.bankrupt&&p.roleEffect==='inquisiteur'){
+      G.players.forEach(t=>{
+        if(!t.bankrupt&&t.id!==p.id&&t.money>=2000){
+          const fee=100;t.money-=fee;p.money+=fee;
+          addLog('🦁 '+p.animal+' Inquisiteur réclame '+fee+'💰 à '+t.animal);
+        }
+      });
+    }
+  });
+  // Villageois per-turn income (from Roi Déchu properties)
+  G.players.forEach(p=>{
+    if(!p.bankrupt&&p.roleEffect==='roi_dechu'){
+      const bonus=10*(p.properties||[]).length;
+      if(bonus>0){p.money+=bonus;addLog('👑 '+p.animal+' Roi Déchu +'+bonus+'💰 (propriétés)');}
+    }
+  });
   if(cur.allianceWith>=0&&G.turn-cur.allianceTurn>=5){
     const ally=G.players.find(p=>p.id===cur.allianceWith);
     if(ally){ally.allianceWith=-1;}
@@ -1734,7 +2042,7 @@ function applySab(card,cur,target){
   else if(id==='steal100'&&target){const a=Math.min(100,target.money);target.money-=a;cur.money+=a;addLog(cur.animal+' 🍄 Vole '+a+'💰 à '+target.animal);}
   else if(id==='steal50'&&target){const a=Math.min(50,target.money);target.money-=a;cur.money+=a;addLog(cur.animal+' 🦊 Ruse — vole '+a+'💰');}
   else if(id==='steal200'&&target){const a=Math.min(200,target.money);target.money-=a;cur.money+=a;addLog(cur.animal+' 🦅 Raid — vole '+a+'💰');}
-  else if(id==='double_rent'){G.doubleRentTurns=2;addLog(cur.animal+' 🌑 Nuit Sombre — loyers ×2 !');}
+  else if(id==='double_rent'){G.doubleRentTurns=2;activateWolfNight(2);addLog(cur.animal+' 🌑 Nuit Sombre — loyers ×2 !');}
   else if(id==='free_toll'){cur.freeToll=true;addLog(cur.animal+' 🌿 Passe Gratuit actif !');}
   else if(id==='rent_freeze'){G.rentFreezeTurns=2;addLog(cur.animal+' 🧊 Gel loyers 2 tours !');}
   else if(id==='jail_send'&&target){target.position=25;target.inJail=true;target.jailTurns=0;addLog(cur.animal+' 🚔 '+target.animal+' envoyé en prison !');}
@@ -1746,6 +2054,19 @@ function applySab(card,cur,target){
   }
   else if(id==='block'&&target){target.blockBuyTurns=2;addLog(cur.animal+' 🚫 Blocus sur '+target.animal+' 2 tours !');}
   else if(id==='bank_rob'&&target){const a=Math.min(300,Math.floor(target.money*.15));target.money-=a;cur.money+=a;addLog(cur.animal+' 🏴‍☠️ Braquage — vole '+a+'💰 à '+target.animal);}
+  else if(id==='vortex_send'&&target){target.position=0;addLog(cur.animal+' 🌀 Vortex — '+target.animal+' téléporté au Départ !');}
+  else if(id==='steal_prop'&&target){
+    const props=target.properties||[];
+    if(props.length===0){addLog(cur.animal+' 💎 Vol de Titre — '+target.animal+' n\'a aucune propriété !');return;}
+    const idx=Math.floor(Math.random()*props.length);
+    const pos=props[idx];
+    target.properties=target.properties.filter(p=>p!==pos);
+    if(!cur.properties)cur.properties=[];
+    cur.properties.push(pos);
+    // Update ownership on board
+    if(BOARD&&BOARD[pos]){BOARD[pos].owner=cur.id;BOARD[pos].ownerAnimal=cur.animal;BOARD[pos].ownerName=cur.name;}
+    addLog(cur.animal+' 💎 Vol de Titre — vole "'+( BOARD&&BOARD[pos]?BOARD[pos].name:'une propriété')+'" à '+target.animal+' !');
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1809,6 +2130,7 @@ const SC_MAP={
 
 function renderGame(){
   if(!G||!BOARD)return;
+  updateNightMode();
   const cur=curPlayer();
   const turnEl=document.getElementById('g-hturn');
   if(turnEl)turnEl.textContent=isMyTurn()
@@ -1827,7 +2149,7 @@ function renderBoard(){
   const container=document.getElementById('board-container');
   if(!BOARD||!G||!container)return;
   const cur=curPlayer();
-  const cW=44,cH=64,cC=80;
+  const cW=34,cH=52,cC=64;
   const bs=cC+24*cW+cC;
   function cellPos(i){
     if(i===0)   return{x:bs-cC,y:bs-cC,w:cC,h:cC};
@@ -1862,10 +2184,11 @@ function renderBoard(){
       border=cell.color+(owner?'bb':'55');
       let colorBar='';
       if(!isCorner){
-        if(isSideB)colorBar='<div style="height:'+barH+'px;width:100%;background:'+cell.color+';flex-shrink:0;order:-1"></div>';
-        else if(isSideT)colorBar='<div style="height:'+barH+'px;width:100%;background:'+cell.color+';flex-shrink:0;order:999"></div>';
-        else if(isSideL)colorBar='<div style="width:'+barH+'px;height:100%;background:'+cell.color+';flex-shrink:0;order:999"></div>';
-        else if(isSideR)colorBar='<div style="width:'+barH+'px;height:100%;background:'+cell.color+';flex-shrink:0;order:-1"></div>';
+        // Bande couleur côté EXTÉRIEUR du plateau
+        if(isSideB) colorBar='<div style="height:'+barH+'px;width:100%;background:'+cell.color+';flex-shrink:0;order:-1"></div>';       // bas : bande en haut (extérieur)
+        else if(isSideT) colorBar='<div style="height:'+barH+'px;width:100%;background:'+cell.color+';flex-shrink:0;order:999"></div>';  // haut : bande en bas (extérieur)
+        else if(isSideL) colorBar='<div style="width:'+barH+'px;height:100%;background:'+cell.color+';flex-shrink:0;order:-1"></div>';   // gauche : bande à gauche (extérieur)
+        else if(isSideR) colorBar='<div style="width:'+barH+'px;height:100%;background:'+cell.color+';flex-shrink:0;order:999"></div>';  // droite : bande à droite (extérieur)
       }
       const bldg=ht?'🏨':(hs>0?'🏠'.repeat(Math.min(hs,4)):'');
       const oBadge=owner?('<span style="font-size:10px">'+owner.animal+'</span>'):('<span style="font-size:7px;opacity:.3">'+(cell.ti||'')+'</span>');
@@ -1894,24 +2217,32 @@ function renderBoard(){
 }
 
 function renderPlayers(){
+  if(!G)return;
+  const html=G.players.map((p,i)=>`<div class="pc ${i===G.currentPlayer?'on':''} ${p.bankrupt?'out':''}"><div class="pc-top"><div class="pc-emo">${p.animal}</div><div style="min-width:0"><div class="pc-name">${p.name}${p.id===myPlayerId?' 👤':''}</div>${p.roleName?'<div class="pc-role" style="color:'+(p.roleColor||'#888')+';background:'+(p.roleColor||'#888')+'18">'+p.roleIcon+' '+p.roleName+'</div>':''}</div></div><div class="pc-money">${(p.money||0).toLocaleString()}💰</div><div class="pc-info">Case ${p.position}${p.inJail?' 🔒':''}${p.skipTurn?' ⏭':''}${p.allianceWith>=0?' 🤝':''}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${(p.properties||[]).map(pi=>{const c=BOARD?.[pi];return c?'<div style="width:8px;height:8px;border-radius:2px;background:'+(c.color||'#888')+'" title="'+c.name+'"></div>':''}).join('')}</div></div>`).join('');
   const panel=document.getElementById('players-panel');
-  if(!panel||!G)return;
-  panel.innerHTML=G.players.map((p,i)=>`<div class="pc ${i===G.currentPlayer?'on':''} ${p.bankrupt?'out':''}"><div class="pc-top"><div class="pc-emo">${p.animal}</div><div style="min-width:0"><div class="pc-name">${p.name}${p.id===myPlayerId?' 👤':''}</div>${p.roleName?'<div class="pc-role" style="color:'+(p.roleColor||'#888')+';background:'+(p.roleColor||'#888')+'18">'+p.roleIcon+' '+p.roleName+'</div>':''}</div></div><div class="pc-money">${(p.money||0).toLocaleString()}💰</div><div class="pc-info">Case ${p.position}${p.inJail?' 🔒':''}${p.skipTurn?' ⏭':''}${p.allianceWith>=0?' 🤝':''}</div><div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px">${(p.properties||[]).map(pi=>{const c=BOARD?.[pi];return c?'<div style="width:8px;height:8px;border-radius:2px;background:'+(c.color||'#888')+'" title="'+c.name+'"></div>':''}).join('')}</div></div>`).join('');
+  if(panel)panel.innerHTML=html;
+  const panelD=document.getElementById('players-panel-desktop');
+  if(panelD)panelD.innerHTML=html;
 }
 
 function renderAction(){
   const bar=document.getElementById('action-bar');
-  if(!bar||!G)return;
+  const barD=document.getElementById('action-bar-desktop');
+  if(!G)return;
+  const setContent=(html)=>{if(bar)bar.innerHTML=html;if(barD)barD.innerHTML=html;};
   const cur=curPlayer();
-  if(!cur||cur.bankrupt){bar.innerHTML='<div class="waiting-card" style="margin:4px 0"><span style="font-size:1.5rem">⏳</span><div style="font-size:.82rem;font-weight:700;color:var(--text2);margin-top:4px">En attente...</div></div>';return;}
+  if(!cur||cur.bankrupt){setContent('<div class="waiting-card" style="margin:4px 0"><span style="font-size:1.5rem">⏳</span><div style="font-size:.82rem;font-weight:700;color:var(--text2);margin-top:4px">En attente...</div></div>');return;}
   const mine=isMyTurn();
   if(!mine){
-    bar.innerHTML=`<div class="waiting-card"><div style="font-size:2rem">${cur.animal}</div><div style="font-size:.9rem;font-weight:800;color:var(--purple);margin-top:6px">Tour de ${cur.name}</div><div style="font-size:.75rem;color:var(--text3);margin-top:4px">En attente de son action...</div>${G.diceResult?'<div style="margin-top:8px;font-size:.88rem;font-weight:800;background:var(--bg3);border-radius:10px;padding:8px;display:inline-block">🎲 '+G.diceResult[0]+' + '+G.diceResult[1]+' = '+(G.diceResult[0]+G.diceResult[1])+'</div>':''}</div>`;
+    setContent(`<div class="waiting-card"><div style="font-size:2rem">${cur.animal}</div><div style="font-size:.9rem;font-weight:800;color:var(--purple);margin-top:6px">Tour de ${cur.name}</div><div style="font-size:.75rem;color:var(--text3);margin-top:4px">En attente de son action...</div>${G.diceResult?'<div style="margin-top:8px;font-size:.88rem;font-weight:800;background:var(--bg3);border-radius:10px;padding:8px;display:inline-block">🎲 '+G.diceResult[0]+' + '+G.diceResult[1]+' = '+(G.diceResult[0]+G.diceResult[1])+'</div>':''}</div>`);
     return;
   }
   // Switch to action pane when it's my turn
   const actionPaneBtn=document.querySelector('[data-pane="action"]');
   if(actionPaneBtn)switchPane('action',actionPaneBtn);
+  // Desktop: switch to action tab too
+  const drtabAction=document.querySelector('.drtab');
+  if(drtabAction)switchDesktopTab('action',drtabAction);
 
   let html=`<div class="ab-top"><div class="ab-emo">${cur.animal}</div><div class="ab-info"><h3>${cur.name}${cur.roleName?' <span style="color:'+(cur.roleColor||'')+'">'+(cur.roleIcon||'')+'</span>':''}</h3><p>${cur.inJail?'🔒 Tu es en prison !':(G.doubleRentTurns>0?'🌑 Loyers ×2 encore '+G.doubleRentTurns+' tour(s)':"🎮 C'est ton tour !")}</p></div></div>`;
   const pa=G.pendingAction;
@@ -1944,7 +2275,7 @@ function renderAction(){
     if(cur.inJail){
       html+=`<button class="gbtn btn-roll" id="act-roll" ${G.diceResult?'disabled':''}>🎲 Lancer pour sortir</button><button class="gbtn btn-jail" id="act-pay-jail">💰 Payer 50💰</button>`;
     } else {
-      html+=`<button class="gbtn btn-roll" id="act-roll" ${G.diceResult?'disabled':''}>🎲 Lancer les dés</button><button class="gbtn btn-build" id="act-build">🏠 Construire</button><button class="gbtn btn-nego" id="act-nego">🤝</button>`;
+      html+=`<button class="gbtn btn-roll" id="act-roll" ${G.diceResult?'disabled':''}>🎲 Lancer les dés</button><button class="gbtn btn-build" id="act-build">🏠 Construire</button><button class="gbtn btn-nego" id="act-nego">🤝</button><button class="gbtn" style="background:linear-gradient(135deg,var(--cyan),#0984e3);color:#fff" id="act-bank">🏦 Banque</button>`;
     }
     html+='</div>';
     if(cur.sabCards&&cur.sabCards.length>0){
@@ -1957,21 +2288,27 @@ function renderAction(){
     }
   }
   bar.innerHTML=html;
-  const bind=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',fn);};
+  if(barD)barD.innerHTML=html;
+  const bind=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',fn);const el2=barD&&barD.querySelector('#'+id);if(el2)el2.addEventListener('click',fn);};
   bind('act-buy',buyProp);bind('act-decline',declineBuy);bind('act-rent',payRent);
   bind('act-card',resolveCard);bind('act-jail-confirm',resolveJailConfirm);bind('act-tax',resolveTax);
   bind('act-zm',resolveZoneMystere);bind('act-end',doEndTurn);bind('act-skip',doSkipTurn);
-  bind('act-roll',rollDice);bind('act-pay-jail',payJail);bind('act-build',openBuildModal);bind('act-nego',openNegoModal);
-  bar.querySelectorAll('[data-sab]').forEach(btn=>{
-    btn.addEventListener('click',()=>useSabCard(Number(btn.dataset.sab)));
+  bind('act-roll',rollDice);bind('act-pay-jail',payJail);bind('act-build',openBuildModal);bind('act-nego',openNegoModal);bind('act-bank',openBankModal);
+  [bar,barD].forEach(container=>{
+    if(!container)return;
+    container.querySelectorAll('[data-sab]').forEach(btn=>{
+      btn.addEventListener('click',()=>useSabCard(Number(btn.dataset.sab)));
+    });
   });
 }
 
 function renderLog(){
+  if(!G)return;
+  const logHtml=[...(G.log||[])].reverse().map((l,i)=>'<div class="log-entry '+(i===0?'new':'')+'">'+l+'</div>').join('');
   const el=document.getElementById('log-list');
-  if(!el||!G)return;
-  el.innerHTML=[...(G.log||[])].reverse().map((l,i)=>'<div class="log-entry '+(i===0?'new':'')+'">'+l+'</div>').join('');
-  el.scrollTop=0;
+  if(el){el.innerHTML=logHtml;el.scrollTop=0;}
+  const elD=document.getElementById('log-list-desktop');
+  if(elD){elD.innerHTML=logHtml;elD.scrollTop=0;}
 }
 
 /* ═══════════════════════════════════════
@@ -2012,6 +2349,77 @@ function openNegoModal(){
   setTimeout(()=>{
     document.querySelectorAll('[data-ally]').forEach(btn=>{
       btn.addEventListener('click',()=>proposeAlliance(Number(btn.dataset.ally)));
+    });
+  },0);
+}
+
+function openBankModal(){
+  if(!isMyTurn()){showNotice("⏳ Ce n'est pas ton tour !");return;}
+  const cur=curPlayer();
+  if(!cur)return;
+  const isBanquier=cur.roleEffect==='banquier';
+  const deposit=cur.bankDeposit||0;
+  const loan=cur.bankLoan||0;
+  const loanRate=isBanquier?0:0.20;
+  const loanCap=500;
+  const canBorrow=loan===0&&cur.money>=0;
+
+  let extra=`
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="background:rgba(0,210,211,.07);border:1px solid rgba(0,210,211,.2);border-radius:14px;padding:14px">
+      <div style="font-size:.85rem;font-weight:900;color:var(--cyan);margin-bottom:8px">💹 Dépôts (+10% tous les 5 tours)</div>
+      <div style="font-size:.8rem;color:var(--text2);margin-bottom:10px">Dépôt actuel : <strong style="color:var(--cyan)">${deposit}💰</strong> · Ton argent : <strong>${cur.money}💰</strong></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="bank-deposit-amt" type="number" min="10" max="${cur.money}" placeholder="Montant" style="flex:1;min-width:80px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:.85rem">
+        <button class="mbtn mbtn-c" style="font-size:.75rem;padding:6px 14px" id="bank-do-deposit">Déposer</button>
+        ${deposit>0?`<button class="mbtn mbtn-o" style="font-size:.75rem;padding:6px 14px" id="bank-do-withdraw">Retirer tout (${deposit}💰)</button>`:''}
+      </div>
+    </div>
+    <div style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:14px;padding:14px">
+      <div style="font-size:.85rem;font-weight:900;color:var(--gold);margin-bottom:8px">💳 Emprunts${isBanquier?' (0% — Banquier)':' (+20% à rembourser)'}</div>
+      <div style="font-size:.8rem;color:var(--text2);margin-bottom:10px">Prêt en cours : <strong style="color:${loan>0?'var(--accent)':'var(--green)'}">${loan>0?loan+'💰 à rembourser':'aucun'}</strong></div>
+      ${canBorrow?`<div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="bank-loan-amt" type="number" min="10" max="${loanCap}" placeholder="Max ${loanCap}💰" style="flex:1;min-width:80px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:.85rem">
+        <button class="mbtn mbtn-g" style="font-size:.75rem;padding:6px 14px" id="bank-do-borrow">Emprunter</button>
+      </div>`:''}
+      ${loan>0?`<button class="mbtn mbtn-r" style="font-size:.75rem;padding:6px 14px;margin-top:6px" id="bank-do-repay">Rembourser ${loan}💰</button>`:''}
+    </div>
+  </div>`;
+
+  showModal('🏦 Banque de la Forêt','',[],'mbtn-o','Fermer',closeModal,extra);
+  setTimeout(()=>{
+    const depBtn=document.getElementById('bank-do-deposit');
+    if(depBtn)depBtn.addEventListener('click',()=>{
+      const amt=Math.min(cur.money,Math.max(0,parseInt(document.getElementById('bank-deposit-amt')?.value)||0));
+      if(amt<=0){showNotice('❌ Montant invalide !');return;}
+      cur.money-=amt;cur.bankDeposit=(cur.bankDeposit||0)+amt;
+      addLog(cur.animal+' 💹 Dépose '+amt+'💰 à la banque');
+      closeModal();renderGame();pushGame();
+    });
+    const wdrBtn=document.getElementById('bank-do-withdraw');
+    if(wdrBtn)wdrBtn.addEventListener('click',()=>{
+      const dep=cur.bankDeposit||0;
+      if(dep<=0)return;
+      cur.money+=dep;cur.bankDeposit=0;
+      addLog(cur.animal+' 💰 Retire '+dep+'💰 de la banque');
+      closeModal();renderGame();pushGame();
+    });
+    const borBtn=document.getElementById('bank-do-borrow');
+    if(borBtn)borBtn.addEventListener('click',()=>{
+      const amt=Math.min(loanCap,Math.max(0,parseInt(document.getElementById('bank-loan-amt')?.value)||0));
+      if(amt<=0){showNotice('❌ Montant invalide !');return;}
+      cur.money+=amt;cur.bankLoan=(cur.bankLoan||0)+Math.round(amt*(1+loanRate));
+      addLog(cur.animal+' 💳 Emprunte '+amt+'💰 (à rembourser : '+cur.bankLoan+'💰)');
+      closeModal();renderGame();pushGame();
+    });
+    const repBtn=document.getElementById('bank-do-repay');
+    if(repBtn)repBtn.addEventListener('click',()=>{
+      const loan2=cur.bankLoan||0;
+      if(loan2<=0)return;
+      if(cur.money<loan2){showNotice('❌ Pas assez d\'argent !');return;}
+      cur.money-=loan2;cur.bankLoan=0;
+      addLog(cur.animal+' ✅ Rembourse '+loan2+'💰 à la banque');
+      closeModal();renderGame();pushGame();
     });
   },0);
 }
@@ -2077,6 +2485,7 @@ function goMenu(){
 window.switchMenuTab = switchMenuTab;
 window.setZoomMode   = setZoomMode;
 window.switchPane    = switchPane;
+window.switchDesktopTab = switchDesktopTab;
 
 document.getElementById('btn-connect-firebase').addEventListener('click',initFirebase);
 document.getElementById('btn-create-room').addEventListener('click',createRoom);
@@ -2088,48 +2497,569 @@ document.getElementById('btn-new-game').addEventListener('click',goMenu);
 document.getElementById('btn-cards-top').addEventListener('click',openCardsModal);
 document.getElementById('btn-nego-top').addEventListener('click',openNegoModal);
 
+/* ═══════════════════════════════════════
+   MODAL CARTES — 2 onglets
+   • Cartes Thème : propriétés par joueur + négo
+   • Caisse Forêt / Destin : pioche avec reset auto
+═══════════════════════════════════════ */
 function openCardsModal(){
   if(!G)return;
-  const usedChestIds=new Set((G.chestDeck||[]).filter(c=>c.used).map(c=>c.id));
-  const usedChanceIds=new Set((G.chanceDeck||[]).filter(c=>c.used).map(c=>c.id));
-  const chestUsed=usedChestIds.size, chestTotal=CHEST.length;
-  const chanceUsed=usedChanceIds.size, chanceTotal=CHANCE.length;
-  const chestLeft=chestTotal-chestUsed, chanceLeft=chanceTotal-chanceUsed;
-  const pct=(n,t)=>Math.round(n/t*100);
-
-  let extra=`
-  <div style="display:flex;flex-direction:column;gap:16px">
-    <div style="background:rgba(46,213,115,.07);border:1px solid rgba(46,213,115,.25);border-radius:14px;padding:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:1.4rem">🌲</span>
-        <div>
-          <div style="font-size:.8rem;font-weight:900;color:#2ed573">Caisse Forêt</div>
-          <div style="font-size:.7rem;color:var(--text3)">${chestLeft} / ${chestTotal} cartes restantes dans la pioche</div>
-        </div>
-        <div style="margin-left:auto;background:rgba(46,213,115,.15);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:900;color:#2ed573">${pct(chestLeft,chestTotal)}%</div>
-      </div>
-      <div style="height:6px;background:var(--bg4);border-radius:3px;margin-bottom:10px"><div style="height:100%;width:${pct(chestLeft,chestTotal)}%;background:linear-gradient(90deg,#2ed573,#00b894);border-radius:3px;transition:.3s"></div></div>
-      <div style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto">
-        ${CHEST.map((c,i)=>{const used=usedChestIds.has(i);return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;background:${used?'rgba(255,255,255,.03)':'rgba(46,213,115,.06)'};opacity:${used?.4:1}"><span style="font-size:1rem">${used?'✓':'🌲'}</span><span style="font-size:.75rem;font-weight:${used?600:700};color:${used?'var(--text3)':'var(--text)'};${used?'text-decoration:line-through':''}">${c.t}</span></div>`;}).join('')}
-      </div>
-    </div>
-    <div style="background:rgba(162,155,254,.07);border:1px solid rgba(162,155,254,.25);border-radius:14px;padding:14px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:1.4rem">🎴</span>
-        <div>
-          <div style="font-size:.8rem;font-weight:900;color:var(--purple)">Cartes Destin</div>
-          <div style="font-size:.7rem;color:var(--text3)">${chanceLeft} / ${chanceTotal} cartes restantes dans la pioche</div>
-        </div>
-        <div style="margin-left:auto;background:rgba(162,155,254,.15);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:900;color:var(--purple)">${pct(chanceLeft,chanceTotal)}%</div>
-      </div>
-      <div style="height:6px;background:var(--bg4);border-radius:3px;margin-bottom:10px"><div style="height:100%;width:${pct(chanceLeft,chanceTotal)}%;background:linear-gradient(90deg,var(--purple),#6d28d9);border-radius:3px;transition:.3s"></div></div>
-      <div style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto">
-        ${CHANCE.map((c,i)=>{const used=usedChanceIds.has(i);return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;background:${used?'rgba(255,255,255,.03)':'rgba(162,155,254,.06)'};opacity:${used?.4:1}"><span style="font-size:1rem">${used?'✓':'🎴'}</span><span style="font-size:.75rem;font-weight:${used?600:700};color:${used?'var(--text3)':'var(--text)'};${used?'text-decoration:line-through':''}">${c.t}</span></div>`;}).join('')}
-      </div>
-    </div>
-  </div>`;
-  showModal('🃏 Cartes en jeu','',[],'mbtn-o','Fermer',closeModal,extra);
+  renderCardsModal('theme');
 }
+
+function renderCardsModal(tab){
+  if(!G)return;
+
+  /* ── Onglets ── */
+  const tabBar=`
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button onclick="renderCardsModal('theme')" style="flex:1;padding:10px 6px;border-radius:10px;border:none;cursor:pointer;font-size:.75rem;font-weight:900;font-family:var(--font);transition:.15s;
+        ${tab==='theme'?'background:linear-gradient(135deg,var(--purple),#6d28d9);color:#fff;box-shadow:0 4px 14px rgba(109,40,217,.4)':'background:var(--bg3);border:1px solid var(--border2);color:var(--text2)'}">
+        🏘️ Cartes Thème
+      </button>
+      <button onclick="renderCardsModal('deck')" style="flex:1;padding:10px 6px;border-radius:10px;border:none;cursor:pointer;font-size:.75rem;font-weight:900;font-family:var(--font);transition:.15s;
+        ${tab==='deck'?'background:linear-gradient(135deg,#2ed573,#00b894);color:#000;box-shadow:0 4px 14px rgba(0,184,148,.35)':'background:var(--bg3);border:1px solid var(--border2);color:var(--text2)'}">
+        🃏 Forêt / Destin
+      </button>
+    </div>`;
+
+  let content='';
+
+  if(tab==='theme'){
+    /* ── TAB 1 : Propriétés style titres de propriété Monopoly ── */
+    const activePlayers=G.players.filter(p=>!p.bankrupt);
+    const myId=myPlayerId;
+    const iAmActive=isMyTurn();
+
+    /* Résumé thèmes restants */
+    const allOwnedPos=new Set(G.players.flatMap(p=>p.properties||[]));
+    const themeStats=THEMES.filter(th=>!th.isZM).map(th=>{
+      const cells=[];
+      for(let i=0;i<100;i++){if(BOARD&&BOARD[i]&&BOARD[i].theme===th.id)cells.push(i);}
+      return{th,total:cells.length,remaining:cells.filter(p=>!allOwnedPos.has(p)).length};
+    }).filter(x=>x.total>0);
+
+    content=`<div style="display:flex;flex-direction:column;gap:14px">`;
+
+    /* Bandeau récap thèmes disponibles */
+    if(themeStats.length>0){
+      content+=`<div style="display:flex;flex-wrap:wrap;gap:5px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px">
+        <div style="width:100%;font-size:.62rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:4px">Propriétés libres</div>
+        ${themeStats.map(({th,remaining,total})=>`<div style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:${th.c}20;border:1px solid ${th.c}50">
+          <span style="font-size:.7rem">${th.i}</span>
+          <span style="font-size:.68rem;font-weight:800;color:${th.c}">${remaining}<span style="opacity:.5">/${total}</span></span>
+        </div>`).join('')}
+      </div>`;
+    }
+
+    /* Cartes propriété par joueur */
+    activePlayers.forEach(p=>{
+      const props=(p.properties||[]).map(pos=>({pos,cell:BOARD?.[pos]})).filter(x=>x.cell&&x.cell.type==='prop');
+      const isMe=p.id===myId;
+      const isCurrent=p.id===G.players[G.currentPlayer].id;
+
+      /* En-tête joueur */
+      content+=`<div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 4px">
+          <span style="font-size:1.3rem">${p.animal}</span>
+          <div style="flex:1">
+            <div style="font-size:.8rem;font-weight:900;color:${isMe?'var(--purple)':'var(--text)'}">${p.name}${isMe?' (toi)':''}${isCurrent?' 🎮':''}</div>
+            <div style="font-size:.65rem;color:var(--text3)">${p.money.toLocaleString()}💰 · ${props.length} propriété${props.length!==1?'s':''}</div>
+          </div>
+          ${!isMe&&iAmActive&&props.length>0?`<button data-nego-player="${p.id}" style="background:linear-gradient(135deg,#ffd700,#f0a500);border:none;border-radius:8px;padding:6px 12px;color:#000;font-size:.68rem;font-weight:900;cursor:pointer;font-family:var(--font);box-shadow:0 2px 8px rgba(255,215,0,.3)">🤝 Alliance</button>`:''}
+        </div>`;
+
+      if(props.length===0){
+        content+=`<div style="font-size:.72rem;color:var(--text3);font-style:italic;padding:8px 12px;background:var(--bg3);border-radius:10px;border:1px dashed var(--border)">Aucune propriété pour l'instant</div>`;
+      } else {
+        content+=`<div style="display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:thin">`;
+        props.forEach(({pos,cell})=>{
+          const hs=getHouses(p,pos);const ht=getHotel(p,pos);
+          const canNego=!isMe&&iAmActive;
+          const canBuild=isMe&&iAmActive&&!ht;
+          const r=cell.rent||[0,0,0,0,0,0];
+          const hcost=Math.floor(cell.price*.5);
+          const htcost=Math.floor(cell.price*.75);
+          /* ── Vrai titre de propriété Monopoly — GRANDE TAILLE ── */
+          content+=`<div
+            ${canNego?`data-nego-prop="${pos}" data-nego-owner="${p.id}"`:''}
+            style="
+              flex:0 0 auto;
+              width:148px;
+              background:#fdf9ec;
+              border:2px solid #000;
+              border-radius:4px;
+              font-family:Georgia,serif;
+              position:relative;
+              cursor:${canNego?'pointer':'default'};
+              box-shadow:3px 4px 14px rgba(0,0,0,.6);
+              transition:transform .13s,box-shadow .13s;
+              overflow:hidden;
+            "
+            onmouseover="if(this.dataset.negoProp){this.style.transform='translateY(-5px) scale(1.03)';this.style.boxShadow='5px 14px 28px rgba(0,0,0,.75)'}"
+            onmouseout="this.style.transform='';this.style.boxShadow='3px 4px 14px rgba(0,0,0,.6)'"
+          >
+            <!-- Bande couleur thème -->
+            <div style="background:${cell.color};padding:8px 6px 6px;border-bottom:2px solid #000;text-align:center;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+              <div style="font-size:20px;line-height:1">${cell.ti||''}</div>
+              <div style="font-size:9px;font-weight:700;color:rgba(0,0,0,.75);text-transform:uppercase;letter-spacing:.5px;font-family:Arial,sans-serif">Titre de propriété</div>
+            </div>
+            <!-- Cadre intérieur -->
+            <div style="margin:4px;border:1px solid #000;display:flex;flex-direction:column">
+              <!-- Nom -->
+              <div style="border-bottom:1px solid #000;padding:7px 5px;text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center">
+                <div style="font-size:11px;font-weight:900;color:#000;text-transform:uppercase;line-height:1.3;letter-spacing:.3px">${cell.name}</div>
+              </div>
+              <!-- Bâtiments si présents -->
+              ${(hs>0||ht)?`<div style="border-bottom:1px solid #000;padding:4px 5px;text-align:center;background:${cell.color}66;font-size:15px">${ht?'🏨':'🏠'.repeat(Math.min(hs,4))}</div>`:''}
+              <!-- Loyers -->
+              <div style="padding:5px 7px;flex:1;font-size:10px;color:#000;font-family:Arial,sans-serif;line-height:2">
+                <div style="display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;padding-bottom:2px;margin-bottom:2px"><span style="color:${hs===0&&!ht?'#000':'#999'}">Loyer</span><span style="font-weight:800;color:${hs===0&&!ht?'#000':'#bbb'}">${r[0]}💰</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:${hs===1&&!ht?'#c00':'#333'}">+ 🏠</span><span style="font-weight:800;color:${hs===1&&!ht?'#e63946':'#333'}">${r[1]}💰</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:${hs===2&&!ht?'#c00':'#333'}">+ 🏠🏠</span><span style="font-weight:800;color:${hs===2&&!ht?'#e63946':'#333'}">${r[2]}💰</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:${hs===3&&!ht?'#c00':'#333'}">+ 🏠🏠🏠</span><span style="font-weight:800;color:${hs===3&&!ht?'#e63946':'#333'}">${r[3]}💰</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:${hs===4&&!ht?'#c00':'#333'}">+ 4 🏠</span><span style="font-weight:800;color:${hs===4&&!ht?'#e63946':'#333'}">${r[4]}💰</span></div>
+                <div style="display:flex;justify-content:space-between;border-top:1px dotted #bbb;padding-top:2px;margin-top:2px"><span style="color:${ht?'#c00':'#333'}">+ 🏨 Hôtel</span><span style="font-weight:800;color:${ht?'#e63946':'#333'}">${r[5]}💰</span></div>
+              </div>
+              <!-- Séparateur -->
+              <div style="height:1px;background:#000"></div>
+              <!-- Infos achat -->
+              <div style="padding:5px 7px;text-align:center;font-family:Arial,sans-serif">
+                <div style="font-size:9px;color:#444;line-height:1.8">🏠 Maison : <strong>${hcost}💰</strong></div>
+                <div style="font-size:9px;color:#444;line-height:1.8">🏨 Hôtel : <strong>${htcost}💰</strong></div>
+                <div style="font-size:12px;font-weight:900;color:#000;margin-top:3px">PRIX ${cell.price}💰</div>
+              </div>
+            </div>
+            <!-- Bouton construire (joueur courant, son tour) -->
+            ${canBuild?`<div style="padding:5px 6px 6px;background:#f0f0e0;border-top:1px solid #ccc;font-family:Arial,sans-serif">
+              ${ht?'<div style="text-align:center;font-size:11px;font-weight:800;color:#888;padding:4px">🏨 Maximum atteint</div>':`<button data-build-card-pos="${pos}" data-build-card-cost="${hs>=4?htcost:hcost}" style="width:100%;background:${hs>=4?'linear-gradient(135deg,#d97706,#b45309)':'linear-gradient(135deg,#16a34a,#15803d)'};border:none;border-radius:5px;padding:8px 4px;color:#fff;font-size:11px;font-weight:900;cursor:pointer;font-family:Arial,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.3)">${hs>=4?'🏨 Construire Hôtel':'🏠 Construire Maison'}<br><span style="font-size:10px;font-weight:700;opacity:.9">${hs>=4?htcost:hcost}💰</span></button>`}
+            </div>`:''}
+            <!-- Badge négo -->
+            ${canNego?`<div style="position:absolute;bottom:0;left:0;right:0;background:#ffd700;border-top:2px solid #b8860b;text-align:center;padding:5px;font-size:10px;font-weight:900;color:#000;font-family:Arial,sans-serif;letter-spacing:.4px">💱 NÉGOCIER</div>`:''}
+          </div>`;
+        });
+        content+=`</div>`;
+      }
+      content+=`</div>`;
+    });
+
+    /* ── Section : Propriétés restantes (non achetées) par thème ── */
+    content+=`<div style="margin-top:8px">
+      <div style="font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <span style="display:inline-block;width:16px;height:2px;background:var(--border2)"></span>
+        🏚️ Propriétés libres à acheter
+        <span style="display:inline-block;width:16px;height:2px;background:var(--border2)"></span>
+      </div>`;
+    THEMES.filter(th=>!th.isZM).forEach(th=>{
+      const freeCells=[];
+      for(let i=0;i<100;i++){
+        if(BOARD&&BOARD[i]&&BOARD[i].theme===th.id&&!allOwnedPos.has(i)){
+          freeCells.push({pos:i,cell:BOARD[i]});
+        }
+      }
+      if(!freeCells.length)return;
+      content+=`<div style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:5px 10px;background:${th.c}15;border-left:3px solid ${th.c};border-radius:0 8px 8px 0">
+          <span style="font-size:.9rem">${th.i}</span>
+          <span style="font-size:.72rem;font-weight:900;color:${th.c}">${th.n}</span>
+          <span style="font-size:.65rem;color:var(--text3);margin-left:auto">${freeCells.length} libre${freeCells.length>1?'s':''}</span>
+        </div>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:thin">`;
+      freeCells.forEach(({pos,cell})=>{
+        const r=cell.rent||[0,0,0,0,0,0];
+        content+=`<div style="
+          flex:0 0 auto;
+          width:148px;
+          background:#fdf9ec;
+          border:2px solid #000;
+          border-radius:4px;
+          font-family:Georgia,serif;
+          position:relative;
+          box-shadow:3px 4px 14px rgba(0,0,0,.6);
+          overflow:hidden;
+          opacity:.95;
+        ">
+          <div style="background:${cell.color};padding:8px 6px 6px;border-bottom:2px solid #000;text-align:center;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+            <div style="font-size:20px;line-height:1">${cell.ti||''}</div>
+            <div style="font-size:9px;font-weight:700;color:rgba(0,0,0,.75);text-transform:uppercase;letter-spacing:.5px;font-family:Arial,sans-serif">Titre de propriété</div>
+          </div>
+          <div style="margin:4px;border:1px solid #000;display:flex;flex-direction:column">
+            <div style="border-bottom:1px solid #000;padding:7px 5px;text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center">
+              <div style="font-size:11px;font-weight:900;color:#000;text-transform:uppercase;line-height:1.3;letter-spacing:.3px">${cell.name}</div>
+            </div>
+            <div style="padding:5px 7px;flex:1;font-size:10px;color:#000;font-family:Arial,sans-serif;line-height:2">
+              <div style="display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;padding-bottom:2px;margin-bottom:2px"><span>Loyer</span><span style="font-weight:800">${r[0]}💰</span></div>
+              <div style="display:flex;justify-content:space-between"><span>+ 🏠</span><span style="font-weight:800">${r[1]}💰</span></div>
+              <div style="display:flex;justify-content:space-between"><span>+ 🏠🏠</span><span style="font-weight:800">${r[2]}💰</span></div>
+              <div style="display:flex;justify-content:space-between"><span>+ 🏠🏠🏠</span><span style="font-weight:800">${r[3]}💰</span></div>
+              <div style="display:flex;justify-content:space-between"><span>+ 4 🏠</span><span style="font-weight:800">${r[4]}💰</span></div>
+              <div style="display:flex;justify-content:space-between;border-top:1px dotted #bbb;padding-top:2px;margin-top:2px"><span>+ 🏨 Hôtel</span><span style="font-weight:800">${r[5]}💰</span></div>
+            </div>
+            <div style="height:1px;background:#000"></div>
+            <div style="padding:5px 7px;text-align:center;font-family:Arial,sans-serif">
+              <div style="font-size:9px;color:#444;line-height:1.8">🏠 Maison : <strong>${Math.floor(cell.price*.5)}💰</strong></div>
+              <div style="font-size:9px;color:#444;line-height:1.8">🏨 Hôtel : <strong>${Math.floor(cell.price*.75)}💰</strong></div>
+              <div style="font-size:12px;font-weight:900;color:#000;margin-top:3px">PRIX ${cell.price}💰</div>
+            </div>
+          </div>
+          <div style="background:#4ade80;border-top:2px solid #16a34a;text-align:center;padding:5px;font-size:10px;font-weight:900;color:#000;font-family:Arial,sans-serif;letter-spacing:.4px">🏚️ LIBRE — À ACHETER</div>
+        </div>`;
+      });
+      content+=`</div></div>`;
+    });
+    content+=`</div>`;
+
+    content+=`</div>`;
+
+  } else {
+    /* ── TAB 2 : Cartes Caisse Forêt & Destin style Monopoly ── */
+    const usedChestIds=new Set((G.chestDeck||[]).filter(c=>c.used).map(c=>c.id));
+    const usedChanceIds=new Set((G.chanceDeck||[]).filter(c=>c.used).map(c=>c.id));
+    const chestTotal=CHEST.length, chestLeft=chestTotal-usedChestIds.size;
+    const chanceTotal=CHANCE.length, chanceLeft=chanceTotal-usedChanceIds.size;
+    const pct=(n,t)=>Math.round(n/t*100);
+    const chestReset=chestLeft===0, chanceReset=chanceLeft===0;
+
+    /* Fonction pour générer une carte style Monopoly */
+    const monoCard=(used,icon,text,accentColor,bgTop)=>`
+      <div style="
+        background:${used?'#1e2030':'#f8f6ef'};
+        border-radius:8px;
+        overflow:hidden;
+        box-shadow:${used?'none':'0 3px 10px rgba(0,0,0,.55),0 0 0 2px #d4af37'};
+        border:${used?'1px solid rgba(255,255,255,.07)':'none'};
+        opacity:${used?.5:1};
+        transition:.2s;
+        position:relative;
+      ">
+        <!-- Bande du haut -->
+        <div style="height:${used?'6px':'22px'};background:${used?'rgba(255,255,255,.08)':bgTop};display:flex;align-items:center;justify-content:center">
+          ${used?'':`<span style="font-size:.85rem">${icon}</span>`}
+        </div>
+        <!-- Corps -->
+        <div style="padding:${used?'7px 10px':'8px 10px'};${used?'':'background:#f8f6ef;'}">
+          ${used?'':`<div style="font-size:.6rem;font-weight:900;text-align:center;text-transform:uppercase;letter-spacing:.5px;color:${bgTop};font-family:'Georgia',serif;margin-bottom:4px">${icon==='🌲'?'CAISSE FORÊT':'DESTIN'}</div>`}
+          <div style="font-size:${used?'.7rem':'.68rem'};font-weight:${used?600:700};color:${used?'var(--text3)':'#1a1a1a'};line-height:1.4;text-align:${used?'left':'center'};${used?'text-decoration:line-through':''};font-family:${used?'var(--font)':"'Georgia',serif"}">${used?'✓ '+text:text}</div>
+        </div>
+      </div>`;
+
+    content=`<div style="display:flex;flex-direction:column;gap:20px">
+
+    <!-- CAISSE FORÊT -->
+    <div>
+      <!-- Header style paquet de cartes Monopoly -->
+      <div style="background:linear-gradient(135deg,#1a5c2a,#2d8a3e);border-radius:12px 12px 0 0;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 0 #0d3016">
+        <div style="width:36px;height:36px;background:#f8f6ef;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 2px 6px rgba(0,0,0,.4)">🌲</div>
+        <div style="flex:1">
+          <div style="font-family:'Georgia',serif;font-size:.85rem;font-weight:900;color:#f8f6ef;letter-spacing:.5px">CAISSE FORÊT</div>
+          <div style="font-size:.65rem;color:rgba(248,246,239,.7);margin-top:2px">${chestReset?'♻️ Pioche remise à zéro !':chestLeft+' / '+chestTotal+' cartes restantes'}</div>
+        </div>
+        <div style="background:rgba(0,0,0,.25);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:900;color:#f8f6ef">${chestReset?'🔄':pct(chestLeft,chestTotal)+'%'}</div>
+      </div>
+      <!-- Barre progression -->
+      <div style="height:5px;background:rgba(0,0,0,.3);border-radius:0">
+        <div style="height:100%;width:${chestReset?100:pct(chestLeft,chestTotal)}%;background:linear-gradient(90deg,#4ade80,#22c55e);transition:.4s"></div>
+      </div>
+      <!-- Grille de cartes -->
+      <div style="background:rgba(26,92,42,.06);border:1px solid rgba(46,213,115,.2);border-top:none;border-radius:0 0 12px 12px;padding:12px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+          ${CHEST.map((c,i)=>{const used=!chestReset&&usedChestIds.has(i);return monoCard(used,'🌲',c.t,'#1a5c2a','#2d8a3e');}).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- CARTES DESTIN -->
+    <div>
+      <div style="background:linear-gradient(135deg,#3d1f7a,#5b2fc9);border-radius:12px 12px 0 0;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 0 #1e0a4a">
+        <div style="width:36px;height:36px;background:#f8f6ef;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 2px 6px rgba(0,0,0,.4)">🎴</div>
+        <div style="flex:1">
+          <div style="font-family:'Georgia',serif;font-size:.85rem;font-weight:900;color:#f8f6ef;letter-spacing:.5px">CARTES DESTIN</div>
+          <div style="font-size:.65rem;color:rgba(248,246,239,.7);margin-top:2px">${chanceReset?'♻️ Pioche remise à zéro !':chanceLeft+' / '+chanceTotal+' cartes restantes'}</div>
+        </div>
+        <div style="background:rgba(0,0,0,.25);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:900;color:#f8f6ef">${chanceReset?'🔄':pct(chanceLeft,chanceTotal)+'%'}</div>
+      </div>
+      <div style="height:5px;background:rgba(0,0,0,.3)">
+        <div style="height:100%;width:${chanceReset?100:pct(chanceLeft,chanceTotal)}%;background:linear-gradient(90deg,#a78bfa,#7c3aed);transition:.4s"></div>
+      </div>
+      <div style="background:rgba(61,31,122,.06);border:1px solid rgba(162,155,254,.2);border-top:none;border-radius:0 0 12px 12px;padding:12px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+          ${CHANCE.map((c,i)=>{const used=!chanceReset&&usedChanceIds.has(i);return monoCard(used,'🎴',c.t,'#3d1f7a','#5b2fc9');}).join('')}
+        </div>
+      </div>
+    </div>
+
+    </div>`;
+  }
+
+  const extra=tabBar+content;
+  showModal('🃏 Cartes','',[],'mbtn-o','Fermer',closeModal,extra);
+
+  /* Bind buttons après rendu */
+  setTimeout(()=>{
+    /* Bouton négo par joueur */
+    document.querySelectorAll('[data-nego-player]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const pid=Number(btn.dataset.negoPlayer);
+        closeModal();
+        openNegoModalWith(pid);
+      });
+    });
+    /* Bouton négo par propriété */
+    document.querySelectorAll('[data-nego-prop]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const pos=Number(btn.dataset.negoProp);
+        const ownerId=Number(btn.dataset.negoOwner);
+        closeModal();
+        openPropNegoModal(pos,ownerId);
+      });
+    });
+    /* Bouton construire depuis la modale cartes */
+    document.querySelectorAll('[data-build-card-pos]').forEach(btn=>{
+      btn.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        buildHouse(Number(btn.dataset.buildCardPos),Number(btn.dataset.buildCardCost));
+      });
+    });
+  },0);
+}
+window.renderCardsModal=renderCardsModal;
+
+/* Négo directe vers un joueur */
+function openNegoModalWith(targetId){
+  if(!G)return;
+  const cur=G.players.find(p=>p.id===myPlayerId);
+  const target=G.players.find(p=>p.id===targetId);
+  if(!cur||!target)return;
+  const canAlly=isMyTurn();
+  let extra=`<div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:12px">
+      <span style="font-size:1.8rem">${target.animal}</span>
+      <div><div style="font-size:.85rem;font-weight:800">${target.name}</div><div style="font-size:.72rem;color:var(--text3)">${target.money.toLocaleString()}💰 · ${(target.properties||[]).length} propriété(s)</div></div>
+    </div>
+    ${canAlly?`<button class="mbtn mbtn-c" data-ally="${targetId}">🤝 Proposer une Alliance (5 tours loyers gratuits)</button>`:'<div style="font-size:.75rem;color:var(--text3)">⏳ La négo d\'alliance est réservée à ton tour.</div>'}
+    <div style="font-size:.75rem;color:var(--text3);padding:8px;background:var(--bg3);border-radius:8px">💡 Pour un échange de propriété, contacte ton adversaire via le bouton 💱 à côté de chaque carte.</div>
+  </div>`;
+  showModal('🤝 Négocier avec '+target.animal+' '+target.name,'',[],'mbtn-o','Fermer',closeModal,extra);
+  setTimeout(()=>{
+    document.querySelectorAll('[data-ally]').forEach(btn=>{
+      btn.addEventListener('click',()=>proposeAlliance(Number(btn.dataset.ally)));
+    });
+  },0);
+}
+
+/* Négo sur une propriété spécifique */
+function openPropNegoModal(pos,ownerId){
+  if(!G||!BOARD)return;
+  const cur=G.players.find(p=>p.id===myPlayerId);
+  const owner=G.players.find(p=>p.id===ownerId);
+  const cell=BOARD[pos];
+  if(!cur||!owner||!cell)return;
+  const canAct=isMyTurn();
+  const hs=getHouses(owner,pos);const ht=getHotel(owner,pos);
+  let extra=`<div style="display:flex;flex-direction:column;gap:12px">
+    <!-- Carte style Monopoly -->
+    <div style="
+      background:#f8f6ef;border-radius:8px;overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,.6),0 0 0 2px #d4af37;
+      max-width:200px;margin:0 auto;font-family:'Georgia',serif;
+    ">
+      <div style="height:36px;background:${cell.color};display:flex;align-items:center;justify-content:center;gap:6px;border-bottom:2px solid rgba(0,0,0,.18)">
+        <span style="font-size:1.2rem">${cell.ti||''}</span>
+      </div>
+      <div style="padding:10px 12px 12px;text-align:center">
+        <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:.5px;color:#555;margin-bottom:3px">Titre de propriété</div>
+        <div style="height:1px;background:#c8b870;margin-bottom:6px"></div>
+        <div style="font-size:.72rem;font-weight:900;color:#1a1a1a;text-transform:uppercase;line-height:1.3;margin-bottom:6px">${cell.name}</div>
+        <div style="height:1px;background:#c8b870;margin-bottom:6px"></div>
+        <div style="font-size:.6rem;color:#333;margin-bottom:2px">PRIX <strong>${cell.price}💰</strong></div>
+        <div style="font-size:.55rem;color:#555;margin-bottom:4px">Loyer : ${cell.rent?.[0]||0}💰</div>
+        ${(hs>0||ht)?`<div style="margin-top:4px">${ht?'<span style="font-size:1.1rem">🏨</span>':'<span style="font-size:.85rem">'+'🏠'.repeat(Math.min(hs,4))+'</span>'}</div>`:''}
+        <div style="font-size:.55rem;color:#777;margin-top:6px">Propriétaire : ${owner.animal} ${owner.name}</div>
+      </div>
+    </div>
+    ${canAct?`
+    <div style="font-size:.75rem;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px">Proposer un échange</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:var(--bg3);border-radius:10px;padding:10px">
+        <div style="font-size:.72rem;color:var(--text2);margin-bottom:6px">Offrir de l'argent :</div>
+        <div style="display:flex;gap:8px">
+          <input id="nego-money-amt" type="number" min="0" max="${cur.money}" placeholder="💰 Montant" style="flex:1;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:.82rem">
+          <button class="mbtn mbtn-g" id="nego-offer-money" style="flex:0 0 auto;padding:7px 14px;font-size:.75rem">Proposer</button>
+        </div>
+      </div>
+      ${(cur.properties||[]).length>0?`
+      <div style="background:var(--bg3);border-radius:10px;padding:10px">
+        <div style="font-size:.72rem;color:var(--text2);margin-bottom:6px">Proposer une de tes propriétés :</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          ${(cur.properties||[]).map(mpos=>{const mc=BOARD[mpos];return mc?`<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:${mc.color}12;border-left:3px solid ${mc.color}"><div style="flex:1;font-size:.75rem;font-weight:700">${mc.name} <span style="color:var(--text3)">${mc.price}💰</span></div><button data-trade-prop="${mpos}" style="background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);border-radius:6px;padding:3px 7px;color:var(--gold);font-size:.65rem;font-weight:800;cursor:pointer;font-family:var(--font)">Proposer</button></div>`:''}).join('')}
+        </div>
+      </div>`:''}
+    </div>
+    `:`<div style="font-size:.75rem;color:var(--text3);padding:8px;background:var(--bg3);border-radius:8px">⏳ Tu peux négocier uniquement pendant ton tour.</div>`}
+    <div style="font-size:.68rem;color:var(--text3);text-align:center;padding:6px">⚠️ La négociation est libre — discutez entre vous !</div>
+  </div>`;
+  showModal('💱 Négocier — '+cell.name,'',[],'mbtn-o','Fermer',closeModal,extra);
+  setTimeout(()=>{
+    const moneyBtn=document.getElementById('nego-offer-money');
+    if(moneyBtn)moneyBtn.addEventListener('click',()=>{
+      const amt=parseInt(document.getElementById('nego-money-amt')?.value)||0;
+      if(amt<=0||amt>cur.money){showNotice('❌ Montant invalide !');return;}
+      addLog('💱 '+cur.animal+' propose '+amt+'💰 pour "'+cell.name+'" à '+owner.animal);
+      showNotice('📢 Offre envoyée dans le journal ! Négociez verbalement.');
+      closeModal();pushGame();
+    });
+    document.querySelectorAll('[data-trade-prop]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const tpos=Number(btn.dataset.tradeProp);const tc=BOARD[tpos];
+        if(!tc)return;
+        addLog('💱 '+cur.animal+' propose "'+tc.name+'" contre "'+cell.name+'" à '+owner.animal);
+        showNotice('📢 Échange proposé dans le journal ! Validez verbalement, puis utilisez la Négo.');
+        closeModal();pushGame();
+      });
+    });
+  },0);
+}
+/* ═══════════════════════════════════════
+   SYSTÈME JOUR / NUIT
+═══════════════════════════════════════ */
+let nightSystemEnabled=true;
+let wolfNightActive=false;
+let wolfNightTurnsLeft=0;
+const NIGHT_HOURS_START=20; // 20h
+const NIGHT_HOURS_END=8;    // 8h
+
+function updateNightMode(){
+  if(!nightSystemEnabled)return;
+  const h=new Date().getHours();
+  const isNight=(h>=NIGHT_HOURS_START||h<NIGHT_HOURS_END);
+  document.body.classList.toggle('night-mode',isNight||wolfNightActive);
+  document.body.classList.toggle('wolf-night',wolfNightActive);
+  const ind=document.getElementById('night-indicator');
+  if(ind){
+    if(wolfNightActive){ind.textContent='🌕 Nuit des Loups ('+wolfNightTurnsLeft+')';ind.style.color='#c4b5fd';ind.style.borderColor='#8b5cf6';}
+    else if(isNight){ind.textContent='🌙 Nuit';ind.style.color='#a29bfe';ind.style.borderColor='#363d5a';}
+    else{ind.textContent='☀️ Jour';ind.style.color='var(--text2)';ind.style.borderColor='var(--border2)';}
+  }
+}
+setInterval(updateNightMode,60000);
+updateNightMode();
+
+/* ── NUIT DES LOUPS — règles complètes ── */
+function activateWolfNight(turns){
+  wolfNightActive=true;
+  wolfNightTurnsLeft=turns||3;
+  updateNightMode();
+  showNotice('🌕 NUIT DES LOUPS ! Loyers ×2, Loup-Garou ×1.5 pendant '+wolfNightTurnsLeft+' tours !');
+  if(G){addLog('🌕 NUIT DES LOUPS activée pendant '+turns+' tours !');}
+}
+
+function decrementWolfNight(){
+  if(!wolfNightActive)return;
+  wolfNightTurnsLeft--;
+  if(wolfNightTurnsLeft<=0){
+    wolfNightActive=false;wolfNightTurnsLeft=0;
+    document.body.classList.remove('wolf-night');
+    showNotice('☀️ La Nuit des Loups est terminée.');
+    if(G)addLog('☀️ Nuit des Loups terminée.');
+  }
+  updateNightMode();
+}
+
+/* Appliquer les effets Nuit des Loups sur les loyers */
+function applyWolfNightRentBonus(rent, payerAnimal, ownerAnimal){
+  if(!wolfNightActive)return rent;
+  let r=rent*2; // loyers x2 de base
+  if(ownerAnimal==='🌕')r=Math.floor(r*1.5); // Loup-Garou x1.5 supplémentaire
+  return r;
+}
+
+/* ═══════════════════════════════════════
+   CHAT EN JEU (Firebase)
+═══════════════════════════════════════ */
+let chatMessages=[];
+let lastChatCount=0;
+
+function toggleChat(side){
+  const id=side==='desktop'?'desktop-chat':'chat-panel';
+  const el=document.getElementById(id);
+  if(!el)return;
+  const collapsed=el.classList.toggle('chat-collapsed');
+  // Update toggle arrow button (first small button in header)
+  const headerSel=side==='desktop'?'#desktop-chat':'#chat-panel';
+  const arrowBtn=document.querySelector(headerSel+' .chat-arrow');
+  if(arrowBtn)arrowBtn.textContent=collapsed?'▲':'▼';
+}
+
+function hideChat(side){
+  const id=side==='desktop'?'desktop-chat':'chat-panel';
+  const el=document.getElementById(id);
+  if(el)el.classList.add('chat-hidden');
+}
+
+function showChatPanel(side){
+  const id=side==='desktop'?'desktop-chat':'chat-panel';
+  const el=document.getElementById(id);
+  if(el){el.classList.remove('chat-hidden');el.classList.remove('chat-collapsed');}
+}
+
+function sendChat(side){
+  const inp=document.getElementById('chat-input-'+(side==='desktop'?'desktop':'mobile'));
+  if(!inp||!inp.value.trim())return;
+  if(!roomCode){showNotice('❌ Rejoins une partie pour chatter !');return;}
+  // Build sender info — use G if available, else fallback to local name/animal
+  let animal='🐺',name='Joueur';
+  if(G&&myPlayerId!==null){const me=G.players.find(p=>p.id===myPlayerId);if(me){animal=me.animal;name=me.name;}}
+  else{
+    const na=document.getElementById('inp-name');const sa=document.getElementById('sel-animal');
+    if(na)name=na.value||'Joueur';if(sa)animal=sa.value||'🐺';
+  }
+  const msg={pid:myPlayerId??-1,animal,name,text:inp.value.trim().replace(/</g,'&lt;').substring(0,120),t:Date.now()};
+  inp.value='';
+  if(!fbUpdate){showNotice('❌ Firebase non connecté');return;}
+  const newMsgs=[...(chatMessages||[]),msg].slice(-60);
+  chatMessages=newMsgs;
+  renderChatUI();
+  fbUpdate('rooms/'+roomCode,{chatMessages:newMsgs}).catch(e=>showNotice('❌ Erreur chat : '+e.message));
+}
+
+function renderChat(msgs){
+  if(!msgs||!Array.isArray(msgs))return;
+  const newCount=msgs.length;
+  if(newCount>lastChatCount&&lastChatCount>0){
+    const last=msgs[newCount-1];
+    if(last&&(last.pid!==myPlayerId||myPlayerId===null||myPlayerId===-1)){
+      showNotice('💬 '+last.animal+' '+last.name+': '+(last.text||'').substring(0,35));
+    }
+  }
+  chatMessages=msgs;
+  lastChatCount=newCount;
+  renderChatUI();
+}
+
+function renderChatUI(){
+  const html=chatMessages.map(m=>{
+    const isMe=(myPlayerId!==null&&myPlayerId!==-1&&m.pid===myPlayerId);
+    return `<div style="font-size:.72rem;line-height:1.4;padding:4px 8px;border-radius:6px;background:${isMe?'rgba(162,155,254,.18)':'rgba(162,155,254,.06)'};margin-bottom:2px"><span style="font-weight:800;color:#a29bfe;margin-right:5px">${m.animal} ${m.name}</span>${m.text||''}</div>`;
+  }).join('');
+  const elD=document.getElementById('chat-messages-desktop');
+  if(elD){elD.innerHTML=html;elD.scrollTop=elD.scrollHeight;}
+  const elM=document.getElementById('chat-messages-mobile');
+  if(elM){elM.innerHTML=html;elM.scrollTop=elM.scrollHeight;}
+}
+
+/* Patch de wolf_night case pour activer le vrai système */
+const _origLandOn=landOn;
+function landOnPatched(cur,pos,diceTotal){
+  _origLandOn(cur,pos,diceTotal);
+  // Check if wolf night was triggered
+  if(G&&G.doubleRentTurns>0&&!wolfNightActive){
+    activateWolfNight(G.doubleRentTurns);
+  }
+}
+
+/* Patch renderLog pour inclure chat dans pane-log Firebase refresh */
+const _origRenderGame=renderGame;
+
 document.getElementById('btn-quit-game').addEventListener('click',()=>{if(confirm('Quitter la partie ? Ta progression sera perdue.'))goMenu();});
 document.getElementById('btn-copy-code').addEventListener('click',()=>{
   navigator.clipboard.writeText(document.getElementById('lobby-code').textContent).then(()=>showNotice('✅ Code copié dans le presse-papier !'));

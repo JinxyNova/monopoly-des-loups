@@ -550,7 +550,7 @@ select.inp{cursor:pointer;}
     </div>
     <div class="cfg-field">
       <label class="cfg-label">databaseURL</label>
-      <input class="inp" id="cfg-dbUrl" placeholder="https://monopolu-loups-default-rtdb.europe-west1.firebasedatabase.app" style="margin-bottom:0">
+      <input class="inp" id="cfg-dbUrl" value="https://monopolu-loups-default-rtdb.europe-west1.firebasedatabase.app" style="margin-bottom:0">
     </div>
     <div class="cfg-field">
       <label class="cfg-label">projectId</label>
@@ -781,10 +781,61 @@ select.inp{cursor:pointer;}
         </div>
       </div>
 
-    </div><!-- fin tab-regles -->
+      <!-- Cases Spéciales -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,215,0,.05));border-bottom:1px solid rgba(255,215,0,.25);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🗺️</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:var(--gold);font-weight:900;letter-spacing:.5px">CASES SPÉCIALES</span>
+        </div>
+        <div style="padding:16px 18px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">✨</span><div><div style="font-size:.82rem;font-weight:800;color:var(--gold);margin-bottom:2px">Miracle — +300💰</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Reçois 300💰 (Druide : +80💰 bonus).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">☄️</span><div><div style="font-size:.82rem;font-weight:800;color:#f87171;margin-bottom:2px">Météorite — −15% argent</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tu perds 15% de ta fortune. 🐘 Éléphant et 🌿 Druide sont immunisés.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🌋</span><div><div style="font-size:.82rem;font-weight:800;color:#fb923c;margin-bottom:2px">Séisme — Adversaires −80💰</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tous les autres joueurs perdent 80💰. 🐘 Éléphant et 🌿 Druide sont immunisés.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🌈</span><div><div style="font-size:.82rem;font-weight:800;color:#38bdf8;margin-bottom:2px">Arc-en-Ciel — +150💰</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Reçois 150💰 de la banque.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🎉</span><div><div style="font-size:.82rem;font-weight:800;color:#f472b6;margin-bottom:2px">Festival — +50💰 pour tous</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tous les joueurs actifs reçoivent 50💰.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">☮️</span><div><div style="font-size:.82rem;font-weight:800;color:#4ade80;margin-bottom:2px">Paix — +200💰 aux pauvres</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tout joueur ayant moins de 500💰 reçoit 200💰.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">⚔️</span><div><div style="font-size:.82rem;font-weight:800;color:#f43f5e;margin-bottom:2px">Pillage — Vole 10% du plus riche</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tu voles 10% de l'argent du joueur le plus riche.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🎰</span><div><div style="font-size:.82rem;font-weight:800;color:#a78bfa;margin-bottom:2px">Loterie — Gain aléatoire</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Reçois entre 50💰 et 250💰 au hasard (Parieur : tire 2× et garde le meilleur ×1.5).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">💰</span><div><div style="font-size:.82rem;font-weight:800;color:var(--green);margin-bottom:2px">Bonus +100💰 / +50💰</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Reçois directement 100💰 ou 50💰 de la banque.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">😴</span><div><div style="font-size:.82rem;font-weight:800;color:var(--text2);margin-bottom:2px">Repos — Passe un tour</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tu passes ton prochain tour (🦩 Flamant : +100💰 à la place).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">⚡</span><div><div style="font-size:.82rem;font-weight:800;color:#fbbf24;margin-bottom:2px">Double Tour — Rejoue immédiatement</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tu lances à nouveau les dés dans la foulée.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🧊</span><div><div style="font-size:.82rem;font-weight:800;color:#38bdf8;margin-bottom:2px">Gel des Loyers — Loyers à 0 pendant 3 tours</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Aucun loyer n'est payé pendant 3 tours pour tout le monde.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🌙</span><div><div style="font-size:.82rem;font-weight:800;color:#ffd700;margin-bottom:2px">Taxe Lunaire — Paye 200💰</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tu paies 200💰 à la banque (🐻 Ours et 🌿 Druide immunisés).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">👑</span><div><div style="font-size:.82rem;font-weight:800;color:#ffd700;margin-bottom:2px">Taxe Royale — Paye 100💰</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Tu paies 100💰 à la banque (🐻 Ours et 🌿 Druide immunisés).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🚔</span><div><div style="font-size:.82rem;font-weight:800;color:var(--accent);margin-bottom:2px">En Prison ! — Direction la case 25</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Va directement en prison. Sort avec un double, en payant 50💰, ou après 3 tours. 🛡️ Protecteur et 🦋 Papillon sont immunisés.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🌿</span><div><div style="font-size:.82rem;font-weight:800;color:var(--green);margin-bottom:2px">Parking Gratuit — Case neutre</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Rien ne se passe. Mais 🌿 Druide et 🦌 Cerf reçoivent +80💰 ici.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">🚂</span><div><div style="font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:2px">Gares — Loyer selon nombre possédé</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">1 gare = 50💰 · 2 gares = 100💰 · 3 gares = 150💰 · 4 gares = 200💰. Prix d'achat : 200💰.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;background:var(--bg3);border-radius:10px;padding:11px 13px;"><span style="font-size:1.2rem;flex-shrink:0">⚡</span><div><div style="font-size:.82rem;font-weight:800;color:var(--cyan);margin-bottom:2px">Utilités — Loyer = dés × 4</div><div style="font-size:.77rem;color:var(--text2);line-height:1.5">Le loyer vaut 4× la valeur des dés qui t'ont amené là. Prix d'achat : 150💰.</div></div></div>
+        </div>
+      </div>
+
+      <!-- Sabotages complets -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,71,87,.3);border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,rgba(255,71,87,.18),rgba(255,71,87,.05));border-bottom:1px solid rgba(255,71,87,.25);padding:14px 18px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem">🎭</span>
+          <span style="font-family:var(--font2);font-size:.9rem;color:var(--accent);font-weight:900;letter-spacing:.5px">SABOTAGES</span>
+        </div>
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:7px;">
+          <div style="font-size:.78rem;color:var(--text2);margin-bottom:6px;line-height:1.6">Le rôle 🎭 <strong style="color:var(--text)">Saboteur</strong> commence avec 2 cartes sabotage. Le 🦔 Hérisson bloque le premier sabotage reçu.</div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🐺</span><div><div style="font-size:.82rem;font-weight:800;color:var(--accent)">Hurlement</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">La cible passe son prochain tour.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🍄</span><div><div style="font-size:.82rem;font-weight:800;color:var(--accent)">Champignons</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Vole 100💰 à la cible (ou tout son argent si elle en a moins).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🦊</span><div><div style="font-size:.82rem;font-weight:800;color:var(--orange)">Ruse</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Vole 50💰 à la cible.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🦅</span><div><div style="font-size:.82rem;font-weight:800;color:var(--accent)">Raid Éclair</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Vole 200💰 à la cible (ou tout son argent si elle en a moins).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #38bdf818;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🌑</span><div><div style="font-size:.82rem;font-weight:800;color:#a29bfe">Nuit Sombre</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Déclenche la Nuit des Loups : tous les loyers ×2 pendant 2 tours. Personne n'est ciblé.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #4ade8018;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🌿</span><div><div style="font-size:.82rem;font-weight:800;color:var(--green)">Passe Gratuit</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Ton prochain loyer est annulé. Effet sur toi-même, pas de cible.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #38bdf818;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🧊</span><div><div style="font-size:.82rem;font-weight:800;color:#38bdf8">Gel Total</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Aucun loyer n'est perçu pendant 2 tours pour tout le monde. Personne n'est ciblé.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🚔</span><div><div style="font-size:.82rem;font-weight:800;color:var(--accent)">Dénonciation</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Envoie directement la cible en prison (case 25).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🪄</span><div><div style="font-size:.82rem;font-weight:800;color:#a855f7">Malédiction</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">La cible ne reçoit que 50% de ses loyers pendant 3 tours.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🏴‍☠️</span><div><div style="font-size:.82rem;font-weight:800;color:#ff9f43">Braquage</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Vole 15% de l'argent de la cible (maximum 300💰).</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #a29bfe18;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🌀</span><div><div style="font-size:.82rem;font-weight:800;color:#a29bfe">Vortex</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Téléporte la cible à la case Départ (case 0). Elle ne reçoit pas les 200💰.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ffd70018;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">💎</span><div><div style="font-size:.82rem;font-weight:800;color:#ffd700">Vol de Titre</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Vole une propriété aléatoire de la cible. Elle devient la tienne immédiatement.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🔥</span><div><div style="font-size:.82rem;font-weight:800;color:#f97316">Incendie</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">Détruit une maison sur une propriété aléatoire de la cible.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid #ff475718;border-radius:9px;padding:9px 12px;"><span style="font-size:1.1rem;flex-shrink:0">🚫</span><div><div style="font-size:.82rem;font-weight:800;color:var(--accent)">Blocus</div><div style="font-size:.75rem;color:var(--text2);line-height:1.4">La cible ne peut plus acheter de propriété pendant 2 tours.</div></div></div>
+        </div>
+      </div>
 
       <!-- Nuit des Loups -->
-      <div style="background:var(--bg2);border:2px solid rgba(139,92,246,.5);border-radius:16px;overflow:hidden;margin-bottom:16px;">
+      <div style="background:var(--bg2);border:2px solid rgba(139,92,246,.5);border-radius:16px;overflow:hidden;">
         <div style="background:linear-gradient(135deg,rgba(80,0,100,.4),rgba(20,0,40,.3));border-bottom:1px solid rgba(139,92,246,.4);padding:14px 18px;display:flex;align-items:center;gap:10px;">
           <span style="font-size:1.5rem">🌕</span>
           <span style="font-family:var(--font2);font-size:.9rem;color:#c4b5fd;font-weight:900;letter-spacing:.5px">NUIT DES LOUPS</span>
@@ -799,8 +850,10 @@ select.inp{cursor:pointer;}
           </div>
         </div>
       </div>
+
+    </div><!-- fin tab-regles -->
   </div><!-- fin menu-main -->
-</div>
+</div><!-- fin menu-screen -->
 
 <!-- LOBBY -->
 <div id="lobby-screen" class="screen">
@@ -1580,7 +1633,7 @@ async function startGame(){
       roleName:shuffR[i%shuffR.length].name,
       roleIcon:shuffR[i%shuffR.length].icon,
       roleColor:shuffR[i%shuffR.length].color,
-      money:1500,position:0,
+      money:1850,position:0,
       properties:[],
       housesArr:new Array(100).fill(0),
       hotelsArr:new Array(100).fill(false),
@@ -2324,19 +2377,44 @@ function renderLog(){
 /* ═══════════════════════════════════════
    MODALS
 ═══════════════════════════════════════ */
+function ownsFullTheme(player,themeId){
+  // Find all board positions belonging to this theme
+  const allProps=[];
+  for(let i=0;i<100;i++){
+    const c=BOARD[i];
+    if(c&&c.type==='prop'&&c.theme===themeId)allProps.push(i);
+  }
+  if(allProps.length===0)return false;
+  return allProps.every(pos=>(player.properties||[]).includes(pos));
+}
+
 function openBuildModal(){
   if(!isMyTurn())return;
   const cur=curPlayer();
   const owned=(cur.properties||[]).filter(pos=>{const c=getCell(pos);return c&&c.type==='prop';});
   if(!owned.length){showModal('🏠 Construire',"Tu n'as aucune propriété à améliorer.",[],'mbtn-o','Fermer',closeModal,'');return;}
+  // Filter to only props where player owns the full theme (Monopoly rule)
+  const buildable=owned.filter(pos=>{const c=getCell(pos);return c&&ownsFullTheme(cur,c.theme);});
   let extra='<div style="display:flex;flex-direction:column;gap:12px">';
-  owned.forEach(pos=>{
-    const cell=getCell(pos);if(!cell)return;
-    const hs=getHouses(cur,pos),ht=getHotel(cur,pos);
-    const hcost=Math.floor(cell.price*.5);
-    if(ht){extra+=`<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:10px"><div><div style="font-size:.82rem;font-weight:800">${cell.name}</div><div style="font-size:.72rem;color:var(--gold)">🏨 Hôtel (max)</div></div></div>`;return;}
-    extra+=`<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:10px"><div style="flex:1"><div style="font-size:.82rem;font-weight:800">${cell.name}</div><div style="font-size:.72rem;color:var(--text2)">🏠 ${hs}/4 ${hs>=4?'→ Hôtel possible':'maisons'}</div></div><button class="mbtn mbtn-g" style="font-size:.72rem;padding:5px 10px" data-build-pos="${pos}" data-build-cost="${hcost}">${hs>=4?'🏨':'🏠'} ${hcost}💰</button></div>`;
-  });
+  if(!buildable.length){
+    extra+='<div style="font-size:.82rem;color:var(--text2);text-align:center;padding:10px">🚫 Tu dois posséder <strong>toutes les propriétés d\'un même thème</strong> pour construire des maisons !</div>';
+    // Show which themes are incomplete
+    const themes=[...new Set(owned.map(pos=>getCell(pos)?.theme).filter(Boolean))];
+    themes.forEach(tid=>{
+      const allProps=[];for(let i=0;i<100;i++){const c=BOARD[i];if(c&&c.type==='prop'&&c.theme===tid)allProps.push(i);}
+      const have=allProps.filter(pos=>(cur.properties||[]).includes(pos)).length;
+      const theme=allProps.length?getCell(allProps[0]):null;
+      if(theme){extra+=`<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid #ff475720;border-radius:10px;padding:10px"><span style="font-size:1.1rem">${theme.ti||'🏠'}</span><div><div style="font-size:.82rem;font-weight:800;color:var(--text)">${theme.theme?.toUpperCase()||''}</div><div style="font-size:.72rem;color:var(--accent)">${have}/${allProps.length} propriétés — il en manque ${allProps.length-have}</div></div></div>`;}
+    });
+  } else {
+    buildable.forEach(pos=>{
+      const cell=getCell(pos);if(!cell)return;
+      const hs=getHouses(cur,pos),ht=getHotel(cur,pos);
+      const hcost=Math.floor(cell.price*.5);
+      if(ht){extra+=`<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:10px"><div><div style="font-size:.82rem;font-weight:800">${cell.name}</div><div style="font-size:.72rem;color:var(--gold)">🏨 Hôtel (max)</div></div></div>`;return;}
+      extra+=`<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:10px"><div style="flex:1"><div style="font-size:.82rem;font-weight:800">${cell.name}</div><div style="font-size:.72rem;color:var(--text2)">🏠 ${hs}/4 ${hs>=4?'→ Hôtel possible':'maisons'} · Thème complet ✅</div></div><button class="mbtn mbtn-g" style="font-size:.72rem;padding:5px 10px" data-build-pos="${pos}" data-build-cost="${hcost}">${hs>=4?'🏨':'🏠'} ${hcost}💰</button></div>`;
+    });
+  }
   extra+='</div>';
   showModal('🏗️ Construire','',[],'mbtn-o','Fermer',closeModal,extra);
   setTimeout(()=>{
@@ -2610,7 +2688,7 @@ function renderCardsModal(tab){
         props.forEach(({pos,cell})=>{
           const hs=getHouses(p,pos);const ht=getHotel(p,pos);
           const canNego=!isMe&&iAmActive;
-          const canBuild=isMe&&iAmActive&&!ht;
+          const canBuild=isMe&&iAmActive&&!ht&&ownsFullTheme(p,cell.theme);
           const r=cell.rent||[0,0,0,0,0,0];
           const hcost=Math.floor(cell.price*.5);
           const htcost=Math.floor(cell.price*.75);
@@ -2851,7 +2929,14 @@ function renderCardsModal(tab){
     document.querySelectorAll('[data-build-card-pos]').forEach(btn=>{
       btn.addEventListener('click',(e)=>{
         e.stopPropagation();
-        buildHouse(Number(btn.dataset.buildCardPos),Number(btn.dataset.buildCardCost));
+        const pos=Number(btn.dataset.buildCardPos);
+        const cur=curPlayer();
+        const cell=getCell(pos);
+        if(!cell||!ownsFullTheme(cur,cell.theme)){
+          showNotice('🚫 Tu dois posséder TOUTES les propriétés du thème pour construire !');
+          return;
+        }
+        buildHouse(pos,Number(btn.dataset.buildCardCost));
       });
     });
   },0);

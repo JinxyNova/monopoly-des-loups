@@ -1508,8 +1508,10 @@ function listenRoom(){
     const room=snap.val();
     if(!room)return;
     // Chat sync
-    if(room.chatMessages&&Array.isArray(room.chatMessages)){
-      renderChat(room.chatMessages);
+    if(room.chatMessages){
+      let msgs=room.chatMessages;
+      if(!Array.isArray(msgs))msgs=Object.values(msgs);
+      renderChat(msgs);
     }
     if(room.status==='lobby'){
       renderLobby(room);
@@ -1763,7 +1765,7 @@ function rollDice(){
     addLog(cur.animal+' passe le Départ ! +'+bonus+'💰');
   }
   addLog(cur.animal+' 🎲 '+d1+'+'+d2+'='+total+' → Case '+cur.position);
-  landOn(cur,cur.position,total);
+  landOnPatched(cur,cur.position,total);
   renderGame();
   pushGame();
 }
@@ -1950,7 +1952,7 @@ function endTurn(){
   const cur=curPlayer();if(!cur)return;
   cur.skipTurn=false;
   G.diceResult=null;G.pendingAction=null;
-  if(G.doubleRentTurns>0){G.doubleRentTurns--;if(G.doubleRentTurns===0&&wolfNightActive)decrementWolfNight();}
+  if(G.doubleRentTurns>0){G.doubleRentTurns--;if(G.doubleRentTurns===0){wolfNightActive=false;wolfNightTurnsLeft=0;document.body.classList.remove('wolf-night');updateNightMode();addLog('☀️ Nuit des Loups terminée.');}}  
   if(G.rentFreezeTurns>0)G.rentFreezeTurns--;
   if(cur.blockBuyTurns>0)cur.blockBuyTurns--;
   // Bank interest every 5 turns per player
@@ -2229,6 +2231,7 @@ function renderAction(){
   const bar=document.getElementById('action-bar');
   const barD=document.getElementById('action-bar-desktop');
   if(!G)return;
+  if(!bar&&!barD)return;
   const setContent=(html)=>{if(bar)bar.innerHTML=html;if(barD)barD.innerHTML=html;};
   const cur=curPlayer();
   if(!cur||cur.bankrupt){setContent('<div class="waiting-card" style="margin:4px 0"><span style="font-size:1.5rem">⏳</span><div style="font-size:.82rem;font-weight:700;color:var(--text2);margin-top:4px">En attente...</div></div>');return;}
@@ -2289,7 +2292,14 @@ function renderAction(){
   }
   bar.innerHTML=html;
   if(barD)barD.innerHTML=html;
-  const bind=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',fn);const el2=barD&&barD.querySelector('#'+id);if(el2)el2.addEventListener('click',fn);};
+  // Bind buttons — find in both mobile bar and desktop bar
+  const bind=(id,fn)=>{
+    [bar,barD].forEach(container=>{
+      if(!container)return;
+      const el=container.querySelector('#'+id);
+      if(el)el.addEventListener('click',fn);
+    });
+  };
   bind('act-buy',buyProp);bind('act-decline',declineBuy);bind('act-rent',payRent);
   bind('act-card',resolveCard);bind('act-jail-confirm',resolveJailConfirm);bind('act-tax',resolveTax);
   bind('act-zm',resolveZoneMystere);bind('act-end',doEndTurn);bind('act-skip',doSkipTurn);
@@ -2482,10 +2492,34 @@ function goMenu(){
    INIT BUTTONS
 ═══════════════════════════════════════ */
 /* ── Expose module-scoped functions to window for inline onclick="" handlers ── */
-window.switchMenuTab = switchMenuTab;
-window.setZoomMode   = setZoomMode;
-window.switchPane    = switchPane;
+window.switchMenuTab    = switchMenuTab;
+window.setZoomMode      = setZoomMode;
+window.switchPane       = switchPane;
 window.switchDesktopTab = switchDesktopTab;
+window.renderCardsModal = renderCardsModal;
+window.openNegoModal    = openNegoModal;
+window.openNegoModalWith= openNegoModalWith;
+window.openPropNegoModal= openPropNegoModal;
+window.openBankModal    = openBankModal;
+window.openBuildModal   = openBuildModal;
+window.toggleChat       = toggleChat;
+window.hideChat         = hideChat;
+window.sendChat         = sendChat;
+window.proposeAlliance  = proposeAlliance;
+window.rollDice         = rollDice;
+window.buyProp          = buyProp;
+window.declineBuy       = declineBuy;
+window.payRent          = payRent;
+window.resolveCard      = resolveCard;
+window.resolveTax       = resolveTax;
+window.resolveZoneMystere= resolveZoneMystere;
+window.resolveJailConfirm= resolveJailConfirm;
+window.doEndTurn        = doEndTurn;
+window.doSkipTurn       = doSkipTurn;
+window.payJail          = payJail;
+window.useSabCard       = useSabCard;
+window.buildHouse       = buildHouse;
+window.closeModal       = closeModal;
 
 document.getElementById('btn-connect-firebase').addEventListener('click',initFirebase);
 document.getElementById('btn-create-room').addEventListener('click',createRoom);
@@ -2822,7 +2856,7 @@ function renderCardsModal(tab){
     });
   },0);
 }
-window.renderCardsModal=renderCardsModal;
+// renderCardsModal exposed via window assignments block below
 
 /* Négo directe vers un joueur */
 function openNegoModalWith(targetId){
@@ -3016,14 +3050,18 @@ function sendChat(side){
   const msg={pid:myPlayerId??-1,animal,name,text:inp.value.trim().replace(/</g,'&lt;').substring(0,120),t:Date.now()};
   inp.value='';
   if(!fbUpdate){showNotice('❌ Firebase non connecté');return;}
-  const newMsgs=[...(chatMessages||[]),msg].slice(-60);
+  const currentMsgs=Array.isArray(chatMessages)?chatMessages:[];
+  const newMsgs=[...currentMsgs,msg].slice(-60);
   chatMessages=newMsgs;
   renderChatUI();
   fbUpdate('rooms/'+roomCode,{chatMessages:newMsgs}).catch(e=>showNotice('❌ Erreur chat : '+e.message));
 }
 
 function renderChat(msgs){
-  if(!msgs||!Array.isArray(msgs))return;
+  if(!msgs)return;
+  // Firebase may return an object with numeric keys instead of an array
+  if(!Array.isArray(msgs))msgs=Object.values(msgs);
+  if(!Array.isArray(msgs)||msgs.length===0)return;
   const newCount=msgs.length;
   if(newCount>lastChatCount&&lastChatCount>0){
     const last=msgs[newCount-1];
@@ -3048,10 +3086,10 @@ function renderChatUI(){
 }
 
 /* Patch de wolf_night case pour activer le vrai système */
-const _origLandOn=landOn;
+// landOnPatched is called from rollDice to ensure wolf night sync
 function landOnPatched(cur,pos,diceTotal){
-  _origLandOn(cur,pos,diceTotal);
-  // Check if wolf night was triggered
+  landOn(cur,pos,diceTotal);
+  // Sync wolf night state from G after landOn
   if(G&&G.doubleRentTurns>0&&!wolfNightActive){
     activateWolfNight(G.doubleRentTurns);
   }

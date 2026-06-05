@@ -1396,6 +1396,7 @@ function switchMenuTab(name){
    MOBILE — ZOOM & PANE NAVIGATION
 ═══════════════════════════════════════ */
 let currentZoomMode='focus'; // 'focus' | 'mid' | 'full'
+let _negoModalShown=false;
 
 function setZoomMode(mode){
   currentZoomMode=mode;
@@ -1580,6 +1581,10 @@ function listenRoom(){
       if(!BOARD)BOARD=buildBoard();
       const newG=deserializeGame(room.gameState);
       if(newG){
+        // Réinitialiser le flag modale si la proposition de négo a changé
+        const prevNego=G&&G.pendingNego;
+        const newNego=newG.pendingNego;
+        if(JSON.stringify(prevNego)!==JSON.stringify(newNego)){_negoModalShown=false;}
         G=newG;
         // Sync wolf night
         if(G.doubleRentTurns>0&&!wolfNightActive){wolfNightActive=true;wolfNightTurnsLeft=G.doubleRentTurns;updateNightMode();}
@@ -1698,6 +1703,7 @@ function serializeGame(g){
     turn:g.turn||0,extraTurn:!!g.extraTurn,round:g.round||0,
     chestDeck:g.chestDeck||null,chanceDeck:g.chanceDeck||null,
     chestIdx:g.chestIdx||0,chanceIdx:g.chanceIdx||0,
+    pendingNego:g.pendingNego||null,
   };
 }
 function deserializeGame(s){
@@ -1723,6 +1729,7 @@ function deserializeGame(s){
       pendingAction:s.pendingAction||null,
       chestDeck:s.chestDeck||null,chanceDeck:s.chanceDeck||null,
       chestIdx:s.chestIdx||0,chanceIdx:s.chanceIdx||0,
+      pendingNego:s.pendingNego||null,
     };
   }catch(e){console.error('deserializeGame error',e);return null;}
 }
@@ -2162,6 +2169,114 @@ function proposeAlliance(targetId){
 }
 
 /* ═══════════════════════════════════════
+   RÉCEPTION PROPOSITION NÉGO
+═══════════════════════════════════════ */
+function checkPendingNego(){
+  if(!G||!G.pendingNego||!myPlayerId)return;
+  const neg=G.pendingNego;
+  // Seulement si on est la cible et qu'on n'a pas encore affiché la modale
+  if(neg.toId!==myPlayerId)return;
+  if(_negoModalShown)return;
+  _negoModalShown=true;
+
+  const from=G.players.find(p=>p.id===neg.fromId);
+  const me=G.players.find(p=>p.id===myPlayerId);
+  if(!from||!me)return;
+
+  let desc='';
+  if(neg.type==='money_for_prop'){
+    desc=from.animal+' <strong>'+from.name+'</strong> te propose <strong>'+neg.amount+'💰</strong> pour ta propriété <strong>"'+neg.propName+'"</strong>.';
+  } else if(neg.type==='prop_for_prop'){
+    desc=from.animal+' <strong>'+from.name+'</strong> te propose <strong>"'+neg.offeredName+'"</strong> contre ta propriété <strong>"'+neg.propName+'"</strong>.';
+  }
+
+  const extra=`<div style="display:flex;flex-direction:column;gap:14px">
+    <div style="background:var(--bg3);border-radius:12px;padding:14px;font-size:.85rem;line-height:1.6">${desc}</div>
+    <div style="display:flex;gap:10px">
+      <button class="mbtn mbtn-g" style="flex:1" id="nego-accept-btn">✅ Accepter</button>
+      <button class="mbtn mbtn-r" style="flex:1" id="nego-decline-btn">❌ Refuser</button>
+    </div>
+  </div>`;
+
+  showModal('🤝 Proposition de Négo !','',[],'','',null,extra);
+
+  setTimeout(()=>{
+    const acceptBtn=document.getElementById('nego-accept-btn');
+    const declineBtn=document.getElementById('nego-decline-btn');
+    if(acceptBtn)acceptBtn.addEventListener('click',()=>{
+      applyNegoAccept(neg);
+    });
+    if(declineBtn)declineBtn.addEventListener('click',()=>{
+      applyNegoDecline(neg);
+    });
+  },0);
+}
+
+function applyNegoAccept(neg){
+  if(!G||!BOARD)return;
+  const from=G.players.find(p=>p.id===neg.fromId);
+  const to=G.players.find(p=>p.id===neg.toId);
+  if(!from||!to){closeModal();G.pendingNego=null;pushGame();return;}
+
+  if(neg.type==='money_for_prop'){
+    const pos=neg.propPos;
+    // Vérifier que "to" possède encore la propriété
+    if(!to.properties.includes(pos)){
+      addLog('⚠️ Négociation annulée — '+to.animal+' ne possède plus "'+neg.propName+'"');
+      showNotice('⚠️ Transaction impossible, propriété non disponible.');
+      G.pendingNego=null;_negoModalShown=false;closeModal();renderGame();pushGame();return;
+    }
+    if(from.money<neg.amount){
+      addLog('⚠️ Négociation annulée — '+from.animal+' n\'a plus assez d\'argent');
+      showNotice('⚠️ '+from.animal+' n\'a plus assez d\'argent !');
+      G.pendingNego=null;_negoModalShown=false;closeModal();renderGame();pushGame();return;
+    }
+    // Transaction
+    from.money-=neg.amount;
+    to.money+=neg.amount;
+    to.properties=to.properties.filter(p=>p!==pos);
+    if(!from.properties)from.properties=[];
+    from.properties.push(pos);
+    if(BOARD[pos]){BOARD[pos].owner=from.id;BOARD[pos].ownerAnimal=from.animal;BOARD[pos].ownerName=from.name;}
+    addLog('✅ Négo acceptée ! '+to.animal+' cède "'+neg.propName+'" à '+from.animal+' pour '+neg.amount+'💰');
+    showNotice('🎉 Accord conclu !');
+
+  } else if(neg.type==='prop_for_prop'){
+    const posGet=neg.propPos;
+    const posGive=neg.offeredPos;
+    if(!to.properties.includes(posGet)||!from.properties.includes(posGive)){
+      addLog('⚠️ Négociation annulée — une propriété n\'est plus disponible');
+      showNotice('⚠️ Transaction impossible.');
+      G.pendingNego=null;_negoModalShown=false;closeModal();renderGame();pushGame();return;
+    }
+    // Échange
+    to.properties=to.properties.filter(p=>p!==posGet);
+    from.properties=from.properties.filter(p=>p!==posGive);
+    from.properties.push(posGet);
+    to.properties.push(posGive);
+    if(BOARD[posGet]){BOARD[posGet].owner=from.id;BOARD[posGet].ownerAnimal=from.animal;BOARD[posGet].ownerName=from.name;}
+    if(BOARD[posGive]){BOARD[posGive].owner=to.id;BOARD[posGive].ownerAnimal=to.animal;BOARD[posGive].ownerName=to.name;}
+    addLog('✅ Échange accepté ! '+from.animal+' donne "'+neg.offeredName+'" et reçoit "'+neg.propName+'"');
+    showNotice('🎉 Échange conclu !');
+  }
+
+  G.pendingNego=null;
+  _negoModalShown=false;
+  closeModal();renderGame();pushGame();
+}
+
+function applyNegoDecline(neg){
+  if(!G)return;
+  const from=G.players.find(p=>p.id===neg.fromId);
+  const to=G.players.find(p=>p.id===neg.toId);
+  addLog('❌ Négo refusée : '+( to?to.animal:'?')+' refuse la proposition de '+(from?from.animal:'?'));
+  showNotice('❌ Proposition refusée.');
+  G.pendingNego=null;
+  _negoModalShown=false;
+  closeModal();renderGame();pushGame();
+}
+
+/* ═══════════════════════════════════════
    RENDU DU PLATEAU
 ═══════════════════════════════════════ */
 const SC_MAP={
@@ -2204,6 +2319,8 @@ function renderGame(){
   const posHint=document.getElementById('my-pos-hint');
   if(posHint&&myP)posHint.textContent='📍 '+myP.animal+' Case '+myP.position+(myP.inJail?' 🔒':'');
   renderBoard();renderPlayers();renderAction();renderLog();
+  // Détecter proposition de négo en attente pour ce joueur
+  checkPendingNego();
   // Auto zoom to follow current player
   setTimeout(()=>applyZoom(),80);
 }
@@ -3031,17 +3148,31 @@ function openPropNegoModal(pos,ownerId){
     if(moneyBtn)moneyBtn.addEventListener('click',()=>{
       const amt=parseInt(document.getElementById('nego-money-amt')?.value)||0;
       if(amt<=0||amt>cur.money){showNotice('❌ Montant invalide !');return;}
-      addLog('💱 '+cur.animal+' propose '+amt+'💰 pour "'+cell.name+'" à '+owner.animal);
-      showNotice('📢 Offre envoyée dans le journal ! Négociez verbalement.');
-      closeModal();pushGame();
+      G.pendingNego={
+        type:'money_for_prop',
+        fromId:cur.id,fromAnimal:cur.animal,fromName:cur.name,
+        toId:owner.id,toAnimal:owner.animal,toName:owner.name,
+        amount:amt,
+        propPos:pos,propName:cell.name,
+      };
+      addLog('💱 '+cur.animal+' propose '+amt+'💰 pour "'+cell.name+'" — en attente de '+owner.animal+' !');
+      showNotice('⏳ Proposition envoyée ! En attente de '+owner.animal+'...');
+      closeModal();renderGame();pushGame();
     });
     document.querySelectorAll('[data-trade-prop]').forEach(btn=>{
       btn.addEventListener('click',()=>{
         const tpos=Number(btn.dataset.tradeProp);const tc=BOARD[tpos];
         if(!tc)return;
-        addLog('💱 '+cur.animal+' propose "'+tc.name+'" contre "'+cell.name+'" à '+owner.animal);
-        showNotice('📢 Échange proposé dans le journal ! Validez verbalement, puis utilisez la Négo.');
-        closeModal();pushGame();
+        G.pendingNego={
+          type:'prop_for_prop',
+          fromId:cur.id,fromAnimal:cur.animal,fromName:cur.name,
+          toId:owner.id,toAnimal:owner.animal,toName:owner.name,
+          offeredPos:tpos,offeredName:tc.name,
+          propPos:pos,propName:cell.name,
+        };
+        addLog('💱 '+cur.animal+' propose "'+tc.name+'" contre "'+cell.name+'" — en attente de '+owner.animal+' !');
+        showNotice('⏳ Échange proposé ! En attente de '+owner.animal+'...');
+        closeModal();renderGame();pushGame();
       });
     });
   },0);
@@ -3287,14 +3418,21 @@ function renderRulesTab(name){
   };
   el.innerHTML=TABS[name]||'';
 }
-document.getElementById('btn-rules-ingame').addEventListener('click',openRules);
-document.getElementById('rules-close-btn').addEventListener('click',closeRules);
-document.getElementById('rules-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeRules();});
-document.getElementById('rules-tabs').addEventListener('click',e=>{
-  const b=e.target.closest('.rtab');if(!b)return;
-  document.querySelectorAll('.rtab').forEach(r=>r.classList.remove('on'));
-  b.classList.add('on');
-  renderRulesTab(b.dataset.tab);
+// Ces éléments sont dans le HTML après ce script, donc on attend le DOM complet
+document.addEventListener('DOMContentLoaded',()=>{
+  const rulesIngame=document.getElementById('btn-rules-ingame');
+  const rulesClose=document.getElementById('rules-close-btn');
+  const rulesOverlay=document.getElementById('rules-overlay');
+  const rulesTabs=document.getElementById('rules-tabs');
+  if(rulesIngame)rulesIngame.addEventListener('click',openRules);
+  if(rulesClose)rulesClose.addEventListener('click',closeRules);
+  if(rulesOverlay)rulesOverlay.addEventListener('click',e=>{if(e.target===e.currentTarget)closeRules();});
+  if(rulesTabs)rulesTabs.addEventListener('click',e=>{
+    const b=e.target.closest('.rtab');if(!b)return;
+    document.querySelectorAll('.rtab').forEach(r=>r.classList.remove('on'));
+    b.classList.add('on');
+    renderRulesTab(b.dataset.tab);
+  });
 });
 
 showScreen('menu');
